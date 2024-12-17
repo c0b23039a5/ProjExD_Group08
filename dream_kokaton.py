@@ -116,6 +116,26 @@ class Bomb:
         self.rct.move_ip(self.vx, self.vy)
         screen.blit(self.img, self.rct)
 
+class Enemy(pg.sprite.Sprite):
+    """
+    敵バードに関するクラス
+    """
+    imgs = [pg.image.load(f"en_bird/bird{i}.png") for i in range(1, 9)]
+    start_move_lst = [[0, +6], [WIDTH, -6]]
+    def __init__(self):
+        super().__init__()
+        start_move_idx = random.randint(0, 1)
+        self.bird_size = random.randint(1, 8)
+        self.image = pg.transform.rotozoom(__class__.imgs[self.bird_size-1], 0, 0.1*self.bird_size)
+        if start_move_idx == 0:
+            self.image = pg.transform.flip(self.image, True, False)
+        self.rect = self.image.get_rect()
+        self.rect.center = __class__.start_move_lst[start_move_idx][0], random.randint(0, HEIGHT)
+        self.vx = __class__.start_move_lst[start_move_idx][1]
+
+    def update(self):
+        self.rect.move_ip(self.vx, 0)
+
 
 class Score:
     """
@@ -146,6 +166,7 @@ def main():
     bomb = Bomb((255, 0, 0), 10)
     # bomb2 = Bomb((0, 0, 255), 20)   
     bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)] 
+    en_birds = pg.sprite.Group()
     clock = pg.time.Clock()
     tmr = 0
     while True:
@@ -164,6 +185,9 @@ def main():
                 pg.display.update()
                 time.sleep(1)
                 return
+        for en_bird in en_birds:
+            if (en_bird.vx > 0 and en_bird.rect.center > WIDTH) or (en_bird.vx < 0 and en_bird.rect.center < 0):
+                en_bird.kill()
                     
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
@@ -172,6 +196,11 @@ def main():
         for bomb in bombs:
             bomb.update(screen)
         # bomb2.update(screen)
+        if tmr %100 == 0:
+            en_birds.add(Enemy())
+        for en_bird in en_birds:
+            en_bird.update()
+        en_birds.draw(screen)
         score.update(screen)
         pg.display.update()
         tmr += 1
