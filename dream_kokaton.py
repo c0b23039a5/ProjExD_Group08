@@ -49,8 +49,11 @@ class Bird:
         オブジェクトを食ったらこうかとんがでかくなる
         引数1 num：こうかとんのサイズの増減量
         """
-        if min(WIDTH,HEIGHT) > self.size*self.rct.height:  # ウィンドウサイズより大きくならないようにする
+        if num < 0 and self.size < 0.5:
+            pass
+        elif min(WIDTH,HEIGHT) > self.size*self.rct.height/2:  # ウィンドウサイズより大きくならないようにする
             self.size += num  # numの増減に合わせてこうかとんのサイズを定義する
+
 
     def dictionary(self, mv_angle,xy=None):
         """
@@ -105,13 +108,14 @@ class Bird:
         self.rct.move_ip(sum_mv)
         if check_bound(self.rct) != (True, True):
             if self.rct.top <0:
-                self.rct.move_ip(0,1)  # 自動で画面内に強制移動
+                sum_mv[1] = -5  # 自動で画面内に強制移動
             if HEIGHT < self.rct.bottom:
-                self.rct.move_ip(0,-1)  # 自動で画面内に強制移動
+                sum_mv[1] = 5  # 自動で画面内に強制移動
             if self.rct.left <0:
-                self.rct.move_ip(0,1)  # 自動で画面内に強制移動
+                sum_mv[0] = -5  # 自動で画面内に強制移動
             if WIDTH < self.rct.right:
-                self.rct.move_ip(0,-1)  # 自動で画面内に強制移動
+                sum_mv[0] = 5  # 自動で画面内に強制移動
+            # self.rct.move_ip(sum_mv)
             self.rct.move_ip(-sum_mv[0], -sum_mv[1])
         if not (sum_mv[0] == 0 and sum_mv[1] == 0):
             self.img = self.dictionary(tuple(sum_mv))
@@ -193,7 +197,7 @@ def main():
                 # fonto = pg.font.Font(None, 80)
                 # txt = fonto.render("Game Over", True, (255, 0, 0))
                 # screen.blit(txt, [WIDTH//2-150, HEIGHT//2])
-                bird.big_bird(0.04)
+                bird.big_bird(0.004)
                 # pg.display.update()
                 # time.sleep(1)
                 # return
