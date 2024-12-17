@@ -116,6 +116,22 @@ class Bomb:
         self.rct.move_ip(self.vx, self.vy)
         screen.blit(self.img, self.rct)
 
+class Plane:
+    """
+    飛行機に関するクラス
+    """
+    plane = pg.transform.rotozoom(pg.image.load("fig/plane.png"), 0, 0.5)
+    plane1 = pg.transform.flip(plane, True, False)  # デフォルトのこうかとん（右向き）
+    def __init__(self, bird: Bird):
+        self.rct = self.plane.get_rect()
+        self.rct.center = (WIDTH, random.randint(0, HEIGHT)) 
+        self.vx, self.vy = -10, 0  # 左方向に移動する速度ベクトル
+        self.bird = bird
+
+    def update(self, screen: pg.Surface):
+        self.rct.move_ip(self.vx, self.vy)
+        screen.blit(self.plane, self.rct)
+
 
 class Score:
     """
@@ -145,6 +161,7 @@ def main():
     bird = Bird((300, 200)) 
     bomb = Bomb((255, 0, 0), 10)
     # bomb2 = Bomb((0, 0, 255), 20)   
+    planes = []  
     bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)] 
     clock = pg.time.Clock()
     tmr = 0
@@ -153,6 +170,9 @@ def main():
             if event.type == pg.QUIT:
                 return         
         screen.blit(bg_img, [0, 0])
+
+        if random.randint(0, 1000) < 1:  # 0.5%の確率で新しい飛行機を生成
+            planes.append(Plane(bird))
         
         for bomb in bombs:
             if bird.rct.colliderect(bomb.rct):
@@ -164,9 +184,21 @@ def main():
                 pg.display.update()
                 time.sleep(1)
                 return
+            
+        for plane in planes:
+            if bird.rct.colliderect(plane.rct):  # 各Planeインスタンスのrctを使用
+                bird.change_img(8, screen)
+                fonto = pg.font.Font(None, 80)
+                txt = fonto.render("Game Over", True, (255, 0, 0))
+                screen.blit(txt, [WIDTH//2-150, HEIGHT//2])
+                pg.display.update()
+                time.sleep(1)
+                return
                     
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
+        for plane in planes:
+            plane.update(screen)  
         # beam.update(screen)
         bombs = [bomb for bomb in bombs if bomb is not None]  # Noneでないものリスト
         for bomb in bombs:
