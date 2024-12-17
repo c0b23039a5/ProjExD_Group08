@@ -117,7 +117,34 @@ class Bomb:
         screen.blit(self.img, self.rct)
 
 
-class Score:
+class Timer:
+    """
+    カウントダウンタイマーのクラス
+    """
+    def __init__(self, total_seconds: int):
+        self.total_seconds = total_seconds
+        self.start_ticks = pg.time.get_ticks()  # タイマー開始時のticksを記録
+        self.font = pg.font.Font(None, 80)
+        self.color = (255, 255, 255)
+
+    def update(self, screen: pg.Surface):
+        """
+        タイマーを更新し、画面に分:秒形式で表示する
+        """
+        elapsed_ticks = (pg.time.get_ticks() - self.start_ticks) // 1000  # 経過秒数
+        remaining_time = max(self.total_seconds - elapsed_ticks, 0)  # 残り秒数（0以下にならない）
+        minutes = remaining_time // 60
+        seconds = remaining_time % 60
+
+        # タイマー表示
+        timer_text = f"{minutes:02}:{seconds:02}"  # 分:秒形式
+        img = self.font.render(timer_text, True, self.color)
+        screen.blit(img, (WIDTH - 200, 50))  # 画面右上に表示
+
+        return remaining_time  # 残り時間を返す
+
+
+class Score: #オブジェクトとの衝突判定ができたらスコアが増加するようにする
     """
     スコアに関するクラス
     """
@@ -133,28 +160,37 @@ class Score:
         # スコアの文字列を更新
         self.img = self.fonto.render(f"Score: {self.score}", True, self.color)
         screen.blit(self.img, self.rect)
+
         
-
-
-
 def main():
     score = Score()
     pg.display.set_caption("たたかえ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))    
     bg_img = pg.image.load("fig/sora.jpg")
+
     bird = Bird((300, 200)) 
-    bomb = Bomb((255, 0, 0), 10)
-    # bomb2 = Bomb((0, 0, 255), 20)   
     bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)] 
+    timer = Timer(1 * 10) #今は10秒でカウントダウンしている
+
     clock = pg.time.Clock()
-    tmr = 0
+    
     while True:
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 return         
         screen.blit(bg_img, [0, 0])
-        
-        for bomb in bombs:
+
+         # タイマーの更新と終了判定
+        remaining_time = timer.update(screen)
+        if remaining_time == 0:
+            fonto = pg.font.Font(None, 80)
+            txt = fonto.render("Time Up!", True, (255, 0, 0))
+            screen.blit(txt, [WIDTH//2-150, HEIGHT//2])
+            pg.display.update()
+            time.sleep(2)
+            return
+
+        for bomb in bombs: #ここも後々変更
             if bird.rct.colliderect(bomb.rct):
                 # ゲームオーバー時に，こうかとん画像を切り替え，1秒間表示させる
                 bird.change_img(8, screen)
@@ -167,14 +203,11 @@ def main():
                     
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
-        # beam.update(screen)
-        bombs = [bomb for bomb in bombs if bomb is not None]  # Noneでないものリスト
         for bomb in bombs:
             bomb.update(screen)
-        # bomb2.update(screen)
+
         score.update(screen)
         pg.display.update()
-        tmr += 1
         clock.tick(50)
 
 
