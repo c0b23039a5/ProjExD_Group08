@@ -49,7 +49,8 @@ class Bird:
         オブジェクトを食ったらこうかとんがでかくなる
         引数1 num：こうかとんのサイズの増減量
         """
-        self.size += num  # numの増減に合わせてこうかとんのサイズを定義する
+        if min(WIDTH,HEIGHT) > self.size*self.rct.height:  # ウィンドウサイズより大きくならないようにする
+            self.size += num  # numの増減に合わせてこうかとんのサイズを定義する
 
     def dictionary(self, mv_angle,xy=None):
         """
@@ -103,6 +104,14 @@ class Bird:
                 sum_mv[1] += mv[1]
         self.rct.move_ip(sum_mv)
         if check_bound(self.rct) != (True, True):
+            if self.rct.top <0:
+                self.rct.move_ip(0,1)  # 自動で画面内に強制移動
+            if HEIGHT < self.rct.bottom:
+                self.rct.move_ip(0,-1)  # 自動で画面内に強制移動
+            if self.rct.left <0:
+                self.rct.move_ip(0,1)  # 自動で画面内に強制移動
+            if WIDTH < self.rct.right:
+                self.rct.move_ip(0,-1)  # 自動で画面内に強制移動
             self.rct.move_ip(-sum_mv[0], -sum_mv[1])
         if not (sum_mv[0] == 0 and sum_mv[1] == 0):
             self.img = self.dictionary(tuple(sum_mv))
