@@ -49,7 +49,8 @@ class Bird:
     def big_bird(self, num:float, screen: pg.Surface):
         """
         オブジェクトを食ったらこうかとんがでかくなる
-        引数 num：こうかとんのサイズの増減量
+        引数1 num：こうかとんのサイズの増減量
+        引数2 screen：画面Surface
         """
         self.size += num
 
