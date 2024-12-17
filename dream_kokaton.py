@@ -76,9 +76,9 @@ class Bird:
         else:
           # こうかとんのサイズを大きくしたときあたり判定も更新するようにする
           # self.rctを代入するとself.rct.centerのデータが失われてしまうため
-          cache = self.rct.center
-          self.rct: pg.Rect = self.img.get_rect()
-          self.rct.center = cache
+          cache_center = self.rct.center
+          self.rct: pg.Rect = imgs[(+5,0)].get_rect() # こうかとんの画像が斜めのときあたり判定が広くなるため、斜めではないときの画像のあたり判定に固定する。
+          self.rct.center = cache_center
         return self.img
 
 
