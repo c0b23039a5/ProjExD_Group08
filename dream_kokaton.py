@@ -35,27 +35,42 @@ class Bird:
         pg.K_LEFT: (-5, 0),
         pg.K_RIGHT: (+5, 0),
     }
-    img0 = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9)
-    img = pg.transform.flip(img0, True, False)  # デフォルトのこうかとん（右向き）
-    imgs = {  # 0度から反時計回りに定義
-        (+5, 0): img,  # 右
-        (+5, -5): pg.transform.rotozoom(img, 45, 0.9),  # 右上
-        (0, -5): pg.transform.rotozoom(img, 90, 0.9),  # 上
-        (-5, -5): pg.transform.rotozoom(img0, -45, 0.9),  # 左上
-        (-5, 0): img0,  # 左
-        (-5, +5): pg.transform.rotozoom(img0, 45, 0.9),  # 左下
-        (0, +5): pg.transform.rotozoom(img, -90, 0.9),  # 下
-        (+5, +5): pg.transform.rotozoom(img, -45, 0.9),  # 右下
-    }
 
     def __init__(self, xy: tuple[int, int]):
         """
         こうかとん画像Surfaceを生成する
         引数 xy：こうかとん画像の初期位置座標タプル
         """
-        self.img = __class__.imgs[(+5, 0)]
+        self.size = 0.9
+        self.img = self.dictionary()[(+5, 0)]
         self.rct: pg.Rect = self.img.get_rect()
         self.rct.center = xy
+
+    def big_bird(self, num:float, screen: pg.Surface):
+        """
+        オブジェクトを食ったらこうかとんがでかくなる
+        引数 num：こうかとんのサイズの増減量
+        """
+        self.size += num
+
+    def dictionary(self):
+        """
+        こうかとんのサイズを反映した回転に合わせた辞書
+        """
+        img0 = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, self.size)
+        img = pg.transform.flip(img0, True, False)  # デフォルトのこうかとん（右向き）
+        imgs = {  # 0度から反時計回りに定義
+            (+5, 0): pg.transform.rotozoom(img, 0, self.size),  # 右
+            (+5, -5): pg.transform.rotozoom(img, 45, self.size),  # 右上
+            (0, -5): pg.transform.rotozoom(img, 90, self.size),  # 上
+            (-5, -5): pg.transform.rotozoom(img0, -45, self.size),  # 左上
+            (-5, 0): pg.transform.rotozoom(img0, 0, self.size),  # 左
+            (-5, +5): pg.transform.rotozoom(img0, 45, self.size),  # 左下
+            (0, +5): pg.transform.rotozoom(img, -90, self.size),  # 下
+            (+5, +5): pg.transform.rotozoom(img, -45, self.size),  # 右下
+        }
+        return imgs
+
 
     def change_img(self, num: int, screen: pg.Surface):
         """
@@ -63,7 +78,7 @@ class Bird:
         引数1 num：こうかとん画像ファイル名の番号
         引数2 screen：画面Surface
         """
-        self.img = pg.transform.rotozoom(pg.image.load(f"fig/{num}.png"), 0, 0.9)
+        self.img = pg.transform.rotozoom(pg.image.load(f"fig/{num}.png"), 0, self.size)
         screen.blit(self.img, self.rct)
 
     def update(self, key_lst: list[bool], screen: pg.Surface):
@@ -81,9 +96,8 @@ class Bird:
         if check_bound(self.rct) != (True, True):
             self.rct.move_ip(-sum_mv[0], -sum_mv[1])
         if not (sum_mv[0] == 0 and sum_mv[1] == 0):
-            self.img = __class__.imgs[tuple(sum_mv)]
+            self.img = self.dictionary()[tuple(sum_mv)]
         screen.blit(self.img, self.rct)
-    
 
 
 class Bomb:
@@ -133,27 +147,27 @@ class Score:
         # スコアの文字列を更新
         self.img = self.fonto.render(f"Score: {self.score}", True, self.color)
         screen.blit(self.img, self.rect)
-        
+
 
 
 
 def main():
     score = Score()
     pg.display.set_caption("たたかえ！こうかとん")
-    screen = pg.display.set_mode((WIDTH, HEIGHT))    
+    screen = pg.display.set_mode((WIDTH, HEIGHT))
     bg_img = pg.image.load("fig/sora.jpg")
-    bird = Bird((300, 200)) 
+    bird = Bird((300, 200))
     bomb = Bomb((255, 0, 0), 10)
-    # bomb2 = Bomb((0, 0, 255), 20)   
-    bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)] 
+    # bomb2 = Bomb((0, 0, 255), 20)
+    bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)]
     clock = pg.time.Clock()
     tmr = 0
     while True:
         for event in pg.event.get():
             if event.type == pg.QUIT:
-                return         
+                return
         screen.blit(bg_img, [0, 0])
-        
+
         for bomb in bombs:
             if bird.rct.colliderect(bomb.rct):
                 # ゲームオーバー時に，こうかとん画像を切り替え，1秒間表示させる
@@ -164,7 +178,9 @@ def main():
                 pg.display.update()
                 time.sleep(1)
                 return
-                    
+
+        bird.big_bird(0.01,screen)
+
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
         # beam.update(screen)
