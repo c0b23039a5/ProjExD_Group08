@@ -55,7 +55,7 @@ class Bird:
 
     def dictionary(self):
         """
-        こうかとんのサイズを反映した回転に合わせた辞書
+        こうかとんに関するパラメーター（回転、サイズ）の動的辞書
         """
         img0 = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, self.size)
         img = pg.transform.flip(img0, True, False)  # デフォルトのこうかとん（右向き）
@@ -178,8 +178,6 @@ def main():
                 pg.display.update()
                 time.sleep(1)
                 return
-
-        bird.big_bird(0.01,screen)
 
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
