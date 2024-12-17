@@ -133,6 +133,23 @@ class Score:
         # スコアの文字列を更新
         self.img = self.fonto.render(f"Score: {self.score}", True, self.color)
         screen.blit(self.img, self.rect)
+
+class Life:
+    """
+    ライフ
+    """
+    def __init__(self):
+        self.fonto = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 30)
+        self.color = (0, 0, 255)
+        self.life = 30
+        self.img = self.fonto.render(f"Life: {self.life}", True, self.color)
+        self.rect = self.img.get_rect()
+        self.rect.bottomleft = (300, HEIGHT - 50)
+
+    def update(self, screen: pg.Surface):
+        # ライフの文字列を更新
+        self.img = self.fonto.render(f"Life: {self.life}", True, self.color)
+        screen.blit(self.img, self.rect)
         
 
 
@@ -148,14 +165,21 @@ def main():
     bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)] 
     clock = pg.time.Clock()
     tmr = 0
+    life = Life()
     while True:
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 return         
         screen.blit(bg_img, [0, 0])
-        
+
         for bomb in bombs:
             if bird.rct.colliderect(bomb.rct):
+                life.life -= 10
+                bombs.remove(bomb)
+                
+        
+        for bomb in bombs:
+            if life.life <= 0:
                 # ゲームオーバー時に，こうかとん画像を切り替え，1秒間表示させる
                 bird.change_img(8, screen)
                 fonto = pg.font.Font(None, 80)
@@ -173,6 +197,7 @@ def main():
             bomb.update(screen)
         # bomb2.update(screen)
         score.update(screen)
+        life.update(screen)
         pg.display.update()
         tmr += 1
         clock.tick(50)
