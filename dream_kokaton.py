@@ -11,6 +11,39 @@ NUM_OF_BOMBS = 5  # 爆弾の個数
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 
+def start_screen(screen: pg.Surface):
+    """
+    ゲームのスタート画面を表示し、ユーザーの入力を待つ
+    """
+    # 背景画像やフォントの準備
+    bg_img = pg.image.load("fig/sora.jpg")  # 背景画像
+    font_title = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 100)  # タイトル用フォント
+    font_instr = pg.font.Font(None, 50)   # 説明用フォント
+
+    # テキストの描画
+    title_text = font_title.render("ドリームこうかとん", True, (255, 0, 0))
+    instr_text = font_instr.render("Press SPACE to Start", True, (0, 255, 0))
+
+    # テキストの位置調整
+    title_rect = title_text.get_rect(center=(WIDTH//2, HEIGHT//3))
+    instr_rect = instr_text.get_rect(center=(WIDTH//2, HEIGHT//2))
+
+    while True:
+        screen.blit(bg_img, [0, 0])
+        screen.blit(title_text, title_rect)  # タイトルを描画
+        screen.blit(instr_text, instr_rect)  # 説明文を描画
+        pg.display.update()
+
+        # ユーザーの入力を待つ
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                pg.quit()
+                sys.exit()
+            if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
+                return  # スペースキーが押されたらスタート画面終了
+
+
+
 def check_bound(obj_rct: pg.Rect) -> tuple[bool, bool]:
     """
     オブジェクトが画面内or画面外を判定し，真理値タプルを返す関数
@@ -139,8 +172,9 @@ class Score:
 
 def main():
     score = Score()
-    pg.display.set_caption("たたかえ！こうかとん")
+    pg.display.set_caption("ドリームこうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))    
+    start_screen(screen)
     bg_img = pg.image.load("fig/sora.jpg")
     bird = Bird((300, 200)) 
     bomb = Bomb((255, 0, 0), 10)
@@ -153,6 +187,7 @@ def main():
             if event.type == pg.QUIT:
                 return         
         screen.blit(bg_img, [0, 0])
+
         
         for bomb in bombs:
             if bird.rct.colliderect(bomb.rct):
