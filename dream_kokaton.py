@@ -42,9 +42,7 @@ class Bird:
         引数 xy：こうかとん画像の初期位置座標タプル
         """
         self.size = 0.9  # こうかとんのサイズ
-        self.img = self.dictionary()[(+5, 0)]  # こうかとんが右に向く
-        self.rct: pg.Rect = self.img.get_rect()
-        self.rct.center = xy
+        self.dictionary((+5, 0),xy)  # こうかとんが右に向く
 
     def big_bird(self, num:float):
         """
@@ -53,7 +51,7 @@ class Bird:
         """
         self.size += num  # numの増減に合わせてこうかとんのサイズを定義する
 
-    def dictionary(self):
+    def dictionary(self, mv_angle,xy=None):
         """
         こうかとんに関するパラメーター（回転、サイズ）の動的辞書
         引数なし
@@ -70,7 +68,17 @@ class Bird:
             (0, +5): pg.transform.rotozoom(img, -90, self.size),  # 下
             (+5, +5): pg.transform.rotozoom(img, -45, self.size),  # 右下
         }
-        return imgs
+        self.img = imgs[mv_angle]  # こうかとんが右に向く
+        if xy:
+          self.rct: pg.Rect = self.img.get_rect()
+          self.rct.center = xy
+        else:
+          # こうかとんのサイズを大きくしたときあたり判定も更新するようにする
+          # self.rctを代入するとself.rct.centerのデータが失われてしまうため
+          cache = self.rct.center
+          self.rct: pg.Rect = self.img.get_rect()
+          self.rct.center = cache
+        return self.img
 
 
     def change_img(self, num: int, screen: pg.Surface):
@@ -97,7 +105,7 @@ class Bird:
         if check_bound(self.rct) != (True, True):
             self.rct.move_ip(-sum_mv[0], -sum_mv[1])
         if not (sum_mv[0] == 0 and sum_mv[1] == 0):
-            self.img = self.dictionary()[tuple(sum_mv)]
+            self.img = self.dictionary(tuple(sum_mv))
         screen.blit(self.img, self.rct)
 
 
@@ -169,16 +177,17 @@ def main():
                 return
         screen.blit(bg_img, [0, 0])
 
-        for bomb in bombs:
+        for bomb in bombs:  # 仮 爆弾を魚だと仮定して
             if bird.rct.colliderect(bomb.rct):
                 # ゲームオーバー時に，こうかとん画像を切り替え，1秒間表示させる
-                bird.change_img(8, screen)
-                fonto = pg.font.Font(None, 80)
-                txt = fonto.render("Game Over", True, (255, 0, 0))
-                screen.blit(txt, [WIDTH//2-150, HEIGHT//2])
-                pg.display.update()
-                time.sleep(1)
-                return
+                # bird.change_img(8, screen)
+                # fonto = pg.font.Font(None, 80)
+                # txt = fonto.render("Game Over", True, (255, 0, 0))
+                # screen.blit(txt, [WIDTH//2-150, HEIGHT//2])
+                bird.big_bird(0.04)
+                # pg.display.update()
+                # time.sleep(1)
+                # return
 
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
