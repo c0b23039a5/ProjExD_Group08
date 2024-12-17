@@ -49,10 +49,13 @@ class Bird:
         オブジェクトを食ったらこうかとんがでかくなる
         引数1 num：こうかとんのサイズの増減量
         """
-        if num < 0 and self.size < 0.5:
+        if num < 0 and self.size < 0.5:  # こうかとんが小さくなりすぎてどこに居るのかが分からなくならないようにする
             pass
         elif min(WIDTH,HEIGHT) > self.size*self.rct.height/2:  # ウィンドウサイズより大きくならないようにする
             self.size += num  # numの増減に合わせてこうかとんのサイズを定義する
+
+        if self.size < 0:  # こうかとんのサイズがマイナスにならないようにする
+            self.size = 0.5
 
 
     def dictionary(self, mv_angle,xy=None):
