@@ -41,24 +41,24 @@ class Bird:
         こうかとん画像Surfaceを生成する
         引数 xy：こうかとん画像の初期位置座標タプル
         """
-        self.size = 0.9
-        self.img = self.dictionary()[(+5, 0)]
+        self.size = 0.9  # こうかとんのサイズ
+        self.img = self.dictionary()[(+5, 0)]  # こうかとんが右に向く
         self.rct: pg.Rect = self.img.get_rect()
         self.rct.center = xy
 
-    def big_bird(self, num:float, screen: pg.Surface):
+    def big_bird(self, num:float):
         """
         オブジェクトを食ったらこうかとんがでかくなる
         引数1 num：こうかとんのサイズの増減量
-        引数2 screen：画面Surface
         """
-        self.size += num
+        self.size += num  # numの増減に合わせてこうかとんのサイズを定義する
 
     def dictionary(self):
         """
         こうかとんに関するパラメーター（回転、サイズ）の動的辞書
+        引数なし
         """
-        img0 = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, self.size)
+        img0 = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, self.size)  # 左向き
         img = pg.transform.flip(img0, True, False)  # デフォルトのこうかとん（右向き）
         imgs = {  # 0度から反時計回りに定義
             (+5, 0): pg.transform.rotozoom(img, 0, self.size),  # 右
