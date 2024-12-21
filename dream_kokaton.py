@@ -128,15 +128,13 @@ class Bird:
         self.rct.move_ip(sum_mv)
         if check_bound(self.rct) != (True, True):
             if self.rct.top <0:
-                sum_mv[1] = -5  # 自動で画面内に強制移動
+                self.rct.top = 0  # 画面内に強制移動
             if HEIGHT < self.rct.bottom:
-                sum_mv[1] = 5  # 自動で画面内に強制移動
+                self.rct.bottom = HEIGHT  # 画面内に強制移動
             if self.rct.left <0:
-                sum_mv[0] = -5  # 自動で画面内に強制移動
+                self.rct.left = 0  # 画面内に強制移動
             if WIDTH < self.rct.right:
-                sum_mv[0] = 5  # 自動で画面内に強制移動
-            # self.rct.move_ip(sum_mv)
-            self.rct.move_ip(-sum_mv[0], -sum_mv[1])
+                self.rct.right = WIDTH  # 画面内に強制移動
         self.dictionary(tuple(sum_mv))
         screen.blit(self.img, self.rct)
 
