@@ -2,6 +2,7 @@ import os
 import random
 import sys
 import time
+import math
 import pygame as pg
 
 
@@ -57,11 +58,11 @@ class Bird:
         if self.size < 0:  # こうかとんのサイズがマイナスにならないようにする
             self.size = 0.5
 
-
     def dictionary(self, mv_angle,xy=None):
         """
         こうかとんに関するパラメーター（回転、サイズ）の動的辞書
-        引数なし
+        引数1 my_angle：こうかとんが移動している角度
+        引数2 xy：座標の指定をする場合は、指定をする。
         """
         img0 = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, self.size)  # 左向き
         img = pg.transform.flip(img0, True, False)  # デフォルトのこうかとん（右向き）
@@ -75,17 +76,33 @@ class Bird:
             (0, +5): pg.transform.rotozoom(img, -90, self.size),  # 下
             (+5, +5): pg.transform.rotozoom(img, -45, self.size),  # 右下
         }
-        self.img = imgs[mv_angle]  # こうかとんが右に向く
-        if xy:
-          self.rct: pg.Rect = self.img.get_rect()
-          self.rct.center = xy
-        else:
-          # こうかとんのサイズを大きくしたときあたり判定も更新するようにする
-          # self.rctを代入するとself.rct.centerのデータが失われてしまうため
-          cache_center = self.rct.center
-          self.rct: pg.Rect = imgs[(+5,0)].get_rect() # こうかとんの画像が斜めのときあたり判定が広くなるため、斜めではないときの画像のあたり判定に固定する。
-          self.rct.center = cache_center
-        return self.img
+        if mv_angle == (0,0):  # こうかとんが静止しているときにでもサイズを更新するようにする。
+            self.img = imgs[self.post_angle]
+            self.update_rect(imgs,mv_angle)
+        else:  # こうかとんが移動しているとき
+          self.img = imgs[mv_angle]
+          if xy:
+            self.rct: pg.Rect = self.img.get_rect()
+            self.rct.center = xy
+          else:
+            self.update_rect(imgs,mv_angle)
+          self.post_angle = mv_angle
+          return self.img
+
+    def update_rect(self,imgs,mv_angle):
+        """
+        こうかとんのサイズを大きくしたときあたり判定も更新するようにする
+        引数 imgs: 画像を回転する辞書
+        """
+        cache_center = self.rct.center  # self.rctを代入するとself.rct.centerのデータが失われてしまうため
+        self.rct: pg.Rect = imgs[(+5,0)].get_rect()  # こうかとんの画像が斜めのときあたり判定が広くなるため、斜めではないときの画像のあたり判定に固定する。
+        self.rct.center = cache_center
+        if ((mv_angle == (+5, -5) or  # 右上
+            mv_angle == (-5, -5) or  # 左上
+            mv_angle == (-5, +5) or  # 左下
+            mv_angle == (+5, +5)) and (not self.post_angle == mv_angle)):  # 右下
+            self.rct.center = (self.rct.center[0]-(imgs[(+5, -5)].get_rect().width-imgs[(+5,0)].get_rect().width)/2,self.rct.center[1]-(imgs[(+5, -5)].get_rect().height-imgs[(+5,0)].get_rect().height)/2)  # こうかとんが斜めの時のcenterの位置調整する。
+
 
 
     def change_img(self, num: int, screen: pg.Surface):
@@ -120,8 +137,7 @@ class Bird:
                 sum_mv[0] = 5  # 自動で画面内に強制移動
             # self.rct.move_ip(sum_mv)
             self.rct.move_ip(-sum_mv[0], -sum_mv[1])
-        if not (sum_mv[0] == 0 and sum_mv[1] == 0):
-            self.img = self.dictionary(tuple(sum_mv))
+        self.dictionary(tuple(sum_mv))
         screen.blit(self.img, self.rct)
 
 
