@@ -25,7 +25,7 @@ def check_bound(obj_rct: pg.Rect) -> tuple[bool, bool]:
     return yoko, tate
 
 
-class Bird:
+class Bird(pg.sprite.Sprite):
     """
     ゲームキャラクター（こうかとん）に関するクラス
     """
@@ -53,9 +53,12 @@ class Bird:
         こうかとん画像Surfaceを生成する
         引数 xy：こうかとん画像の初期位置座標タプル
         """
-        self.img = __class__.imgs[(+5, 0)]
-        self.rct: pg.Rect = self.img.get_rect()
-        self.rct.center = xy
+        super().__init__()
+        self.image = __class__.imgs[(+5, 0)]
+        self.mask = pg.mask.from_surface(self.image) # 透明な部分を無視するsurface「mask」を追加、当たり判定はこれを用いて行う
+        self.rect: pg.Rect = self.image.get_rect()
+        self.rect.center = xy
+        self.size = 1
 
     def change_img(self, num: int, screen: pg.Surface):
         """
@@ -63,8 +66,9 @@ class Bird:
         引数1 num：こうかとん画像ファイル名の番号
         引数2 screen：画面Surface
         """
-        self.img = pg.transform.rotozoom(pg.image.load(f"fig/{num}.png"), 0, 0.9)
-        screen.blit(self.img, self.rct)
+        self.image = pg.transform.rotozoom(pg.image.load(f"fig/{num}.png"), 0, 0.9)
+        self.mask = pg.mask.from_surface(self.image)
+        screen.blit(self.image, self.rect)
 
     def update(self, key_lst: list[bool], screen: pg.Surface):
         """
@@ -77,12 +81,13 @@ class Bird:
             if key_lst[k]:
                 sum_mv[0] += mv[0]
                 sum_mv[1] += mv[1]
-        self.rct.move_ip(sum_mv)
-        if check_bound(self.rct) != (True, True):
-            self.rct.move_ip(-sum_mv[0], -sum_mv[1])
+        self.rect.move_ip(sum_mv)
+        if check_bound(self.rect) != (True, True):
+            self.rect.move_ip(-sum_mv[0], -sum_mv[1])
         if not (sum_mv[0] == 0 and sum_mv[1] == 0):
-            self.img = __class__.imgs[tuple(sum_mv)]
-        screen.blit(self.img, self.rct)
+            self.image = __class__.imgs[tuple(sum_mv)]
+            self.mask = pg.mask.from_surface(self.image)
+        screen.blit(self.image, self.rect)
     
 
 
@@ -121,20 +126,23 @@ class Enemy(pg.sprite.Sprite):
     敵バードに関するクラス
     """
     imgs = [pg.image.load(f"en_bird/bird{i}.png") for i in range(1, 9)]
-    start_move_lst = [[0, +6], [WIDTH, -6]]
+    start_move_lst = [[0, +6], [WIDTH, -6]] # 初期位置と移動速度をまとめたリスト
     def __init__(self):
         super().__init__()
-        start_move_idx = random.randint(0, 1)
-        self.bird_size = random.randint(1, 8)
-        self.image = pg.transform.rotozoom(__class__.imgs[self.bird_size-1], 0, 0.1*self.bird_size)
-        if start_move_idx == 0:
+        start_move_idx = random.randint(0, 1) # start_move_lstのインデックスを決める変数(どちらからスタートし、どちらに動くか決める)
+        self.size = random.randint(1, 8) # 鳥の大きさを決める変数
+        self.image = pg.transform.rotozoom(__class__.imgs[self.size-1], 0, 0.1*self.size)
+        if start_move_idx == 0: # スタート位置が左端のとき画像を反転させる
             self.image = pg.transform.flip(self.image, True, False)
-        self.rect = self.image.get_rect()
-        self.rect.center = __class__.start_move_lst[start_move_idx][0], random.randint(0, HEIGHT)
-        self.vx = __class__.start_move_lst[start_move_idx][1]
+        self.mask = pg.mask.from_surface(self.image) # 透明な部分を無視するsurface「mask」を追加、当たり判定にはこれを使う
+        self.rect = self.mask.get_rect()
+        self.rect.center = __class__.start_move_lst[start_move_idx][0], random.randint(0, HEIGHT) # 初期位置
+        self.vx = __class__.start_move_lst[start_move_idx][1] # どちらに動くかをきめる変数
 
     def update(self):
         self.rect.move_ip(self.vx, 0)
+        if (self.vx > 0 and self.rect.center[0] > WIDTH) or (self.vx < 0 and self.rect.center[0] < 0): # 初期位置でない画面端に到達したら削除
+                self.kill()
 
 
 class Score:
@@ -153,10 +161,24 @@ class Score:
         # スコアの文字列を更新
         self.img = self.fonto.render(f"Score: {self.score}", True, self.color)
         screen.blit(self.img, self.rect)
+
+def check_eat_or_ed(bird: Bird, en_birds: pg.sprite.Group):
+    """
+    こうかとんと敵バードが当たった時に値を返す関数
+    返り値:
+    こうかとんのsizeの方が大きい場合:1
+    敵のsizeの方が大きい場合:0
+    引数1 bird: birdクラスのこうかとん
+    引数2 en_birds Enemyクラスの敵バードを要素に持つ、Groupクラス
+    """
+    for en_bird in pg.sprite.spritecollide(bird, en_birds, False): # こうかとんと敵バードの当たり判定について
+            offset = (bird.rect.x - en_bird.rect.x, bird.rect.y - en_bird.rect.y)
+            if en_bird.mask.overlap(bird.mask, offset):
+                if bird.size < en_bird.size:
+                    return 0
+                else:
+                    return 1
         
-
-
-
 def main():
     score = Score()
     pg.display.set_caption("たたかえ！こうかとん")
@@ -175,6 +197,7 @@ def main():
                 return         
         screen.blit(bg_img, [0, 0])
         
+        """
         for bomb in bombs:
             if bird.rct.colliderect(bomb.rct):
                 # ゲームオーバー時に，こうかとん画像を切り替え，1秒間表示させる
@@ -184,22 +207,21 @@ def main():
                 screen.blit(txt, [WIDTH//2-150, HEIGHT//2])
                 pg.display.update()
                 time.sleep(1)
-                return
-        for en_bird in en_birds:
-            if (en_bird.vx > 0 and en_bird.rect.center > WIDTH) or (en_bird.vx < 0 and en_bird.rect.center < 0):
-                en_bird.kill()
-                    
+                return 
+        """            
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
         # beam.update(screen)
-        bombs = [bomb for bomb in bombs if bomb is not None]  # Noneでないものリスト
-        for bomb in bombs:
-            bomb.update(screen)
+        #bombs = [bomb for bomb in bombs if bomb is not None]  # Noneでないものリスト
+        #for bomb in bombs:
+        #    bomb.update(screen)
         # bomb2.update(screen)
         if tmr %100 == 0:
             en_birds.add(Enemy())
         for en_bird in en_birds:
             en_bird.update()
+        check_eat_or_ed(bird, en_birds)
+
         en_birds.draw(screen)
         score.update(screen)
         pg.display.update()
