@@ -10,28 +10,41 @@ HEIGHT = 650  # ゲームウィンドウの高さ
 NUM_OF_BOMBS = 5  # 爆弾の個数
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-
 def start_screen(screen: pg.Surface):
     """
     ゲームのスタート画面を表示し、ユーザーの入力を待つ
     """
+
+    color = 200
     # 背景画像やフォントの準備
     bg_img = pg.image.load("fig/sora.jpg")  # 背景画像
+    kokaton_img = pg.image.load("fig/3.png")  # 背景画像
+    kokaton_img = pg.transform.scale(kokaton_img,(158, 168))
     font_title = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 100)  # タイトル用フォント
-    font_instr = pg.font.Font(None, 50)   # 説明用フォント
+    font_start = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 50)   # 説明用フォント
+    font_rule = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 50)   # 説明用フォント
+
 
     # テキストの描画
-    title_text = font_title.render("ドリームこうかとん", True, (255, 0, 0))
-    instr_text = font_instr.render("Press SPACE to Start", True, (0, 255, 0))
-
-    # テキストの位置調整
-    title_rect = title_text.get_rect(center=(WIDTH//2, HEIGHT//3))
-    instr_rect = instr_text.get_rect(center=(WIDTH//2, HEIGHT//2))
+    title_text = font_title.render("ゲームタイトル", True, (255, 255, 255))
+    start_text = font_start.render("スタート", True, (2, 200, 0))
+    rule_text = font_rule.render("遊び方", True, (2, 200, 0))
 
     while True:
+        # 半透明なテキストSurfaceを作成
+        start_surf = start_text.convert_alpha()
+        start_surf.set_alpha(200)  # 透明度設定：0（完全透明）～ 255（不透明）
+        # テキストの位置調整
+        title_rect = title_text.get_rect(center=(WIDTH//2, HEIGHT//4))
+        button_rect = start_text.get_rect(center=(WIDTH//3, (HEIGHT//5)*4))
+        rule_rect = rule_text.get_rect(center=((WIDTH//3)*2, (HEIGHT//5)*4))
+
+
         screen.blit(bg_img, [0, 0])
         screen.blit(title_text, title_rect)  # タイトルを描画
-        screen.blit(instr_text, instr_rect)  # 説明文を描画
+        screen.blit(start_surf, button_rect)  # 説明文を描画
+        screen.blit(rule_text, rule_rect)  # 説明文を描画
+        screen.blit(kokaton_img, ((WIDTH//2)-100, (HEIGHT//2)-50)) #画像の描画
         pg.display.update()
 
         # ユーザーの入力を待つ
@@ -39,8 +52,49 @@ def start_screen(screen: pg.Surface):
             if event.type == pg.QUIT:
                 pg.quit()
                 sys.exit()
-            if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
-                return  # スペースキーが押されたらスタート画面終了
+            if event.type == pg.MOUSEBUTTONDOWN:  # マウスクリックの検知
+                if button_rect.collidepoint(event.pos):  # クリック位置がボタン内かを判定
+                    return "play" # スタート画面終了
+                if rule_rect.collidepoint(event.pos):  # クリック位置がボタン内かを判定
+                    return  # スタート画面終了
+
+
+def Howto_screen(screen: pg.Surface):
+    """
+    ゲームの遊び方の画面を表示し、ユーザーの入力を待つ
+    """
+    # pg.mixer.music.load("sound/_Albatross.mp3") #音声ファイルの読み込み
+    # pg.mixer.music.play(-1) #音声を再生（無限ループ）
+    
+    # 背景画像やフォントの準備
+    bg_img = pg.image.load("fig/sora.jpg")  # 背景画像
+    Howto_title = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 100)  # タイトル用フォント
+    font_return = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 50)   # 説明用フォント
+    
+    # テキストの描画
+    Howto_text = Howto_title.render("遊び方を書くページだよ", True, (255, 255, 255))
+    font_return = font_return.render("戻る", True, (2, 200, 0))
+    
+    while True:
+        # 半透明なテキストSurfaceを作成
+        Howto_surf = Howto_text.convert_alpha()
+        Howto_surf.set_alpha(125)  # 透明度設定：0（完全透明）～ 255（不透明）
+        # テキストの位置調整
+        title_rect = Howto_text.get_rect(center=(WIDTH//2, HEIGHT//4))
+        return_rect = font_return.get_rect(center=(WIDTH//2, (HEIGHT//4)*3))
+        screen.blit(bg_img, [0, 0])
+        screen.blit(Howto_text, title_rect)  # タイトルを描画
+        screen.blit(font_return, return_rect)  # 戻るボタンを描画
+        pg.display.update()
+        
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                pg.quit()
+                sys.exit()
+            if event.type == pg.MOUSEBUTTONDOWN:  # マウスクリックの検知
+                if return_rect.collidepoint(event.pos):  # クリック位置がボタン内かを判定
+                    return "play" # スタート画面終了
+        
 
 
 
@@ -171,18 +225,30 @@ class Score:
 
 
 def main():
+    pg.mixer.music.load("sound/_Albatross.mp3") #音声ファイルの読み込み
+    pg.mixer.music.play(-1) #音声を再生（無限ループ）
+    screen_scene = 0
+    pg.display.set_caption("ゲームタイトル")
+    screen = pg.display.set_mode((WIDTH, HEIGHT))
     score = Score()
-    pg.display.set_caption("ドリームこうかとん")
-    screen = pg.display.set_mode((WIDTH, HEIGHT))    
-    start_screen(screen)
     bg_img = pg.image.load("fig/sora.jpg")
     bird = Bird((300, 200)) 
     bomb = Bomb((255, 0, 0), 10)
-    # bomb2 = Bomb((0, 0, 255), 20)   
     bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)] 
     clock = pg.time.Clock()
     tmr = 0
     while True:
+        if screen_scene == 0:
+            if start_screen(screen) == "play":
+                screen_scene = 1
+            else:
+                screen_scene = 2
+                continue
+        elif screen_scene == 2:
+            Howto_screen(screen) #遊び方関数
+            screen_scene = 0
+            continue
+
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 return         
@@ -215,6 +281,7 @@ def main():
 
 if __name__ == "__main__":
     pg.init()
+    pg.mixer.init()
     main()
     pg.quit()
     sys.exit()
