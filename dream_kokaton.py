@@ -134,7 +134,7 @@ class Bird(pg.sprite.Sprite):
         こうかとん画像Surfaceを生成する
         引数 xy：こうかとん画像の初期位置座標タプル
         """
-        self.size = 2
+        self.size = 3
         self.post_size = self.size  # 過去のサイズを記録する
         self.post_angle = (+5, 0)  # 過去のアングルを記録する
         self.dictionary((+5, 0),xy)
@@ -303,7 +303,6 @@ class Enemy(pg.sprite.Sprite):
         if (self.vx > 0 and self.rect.center[0] > WIDTH) or (self.vx < 0 and self.rect.center[0] < 0):  # 初期位置でない画面端に到達したら削除
                 self.kill()
 
-
 class Timer:
     """
     カウントダウンタイマーのクラス
@@ -351,6 +350,7 @@ class Score: #オブジェクトとの衝突判定ができたらスコアが増
         self.image = self.fonto.render(f"Score: {self.score}", True, self.color)
         screen.blit(self.image, self.rect)
 
+
 def check_eat_or_ed(bird: Bird, en_birds: pg.sprite.Group):
     """
     こうかとんと敵バードが当たった時に値を返す関数
@@ -359,12 +359,10 @@ def check_eat_or_ed(bird: Bird, en_birds: pg.sprite.Group):
     返り値 こうかとんのsizeの方が大きい場合:1 ／ 敵のsizeの方が大きい場合:0
     """
     for en_bird in pg.sprite.spritecollide(bird, en_birds, False):  # こうかとんと敵バードの当たり判定について
-            offset = (bird.rect.x - en_bird.rect.x, bird.rect.y - en_bird.rect.y)
-            if en_bird.mask.overlap(bird.mask, offset):
-                if bird.size < en_bird.size:
-                    return 0
-                else:
-                    return 1
+        offset = (bird.rect.x - en_bird.rect.x, bird.rect.y - en_bird.rect.y)
+        if en_bird.mask.overlap(bird.mask, offset):
+                en_bird.kill()
+                return bird.size > en_bird.size
 
 
 class Life:
@@ -388,14 +386,9 @@ class Life:
         screen.blit(self.image, self.rect)
 
     def life_decrease(self,screen: pg.Surface):
-        for bomb in self.bombs:
-            if self.bird.rect.colliderect(bomb.rect):
                 print("Collision detected!")  # デバッグ用プリント
                 self.life -= 10
                 print(f"Life decreased to: {self.life}")
-                self.bombs.remove(bomb)
-                break
-        screen.blit(self.image, self.rect)
 
 
 def main():
@@ -455,12 +448,15 @@ def main():
             plane.update(screen)
         if tmr %100 == 0:
             en_birds.add(Enemy())
+
         for en_bird in en_birds:
             en_bird.update()
 
-        if check_eat_or_ed(bird, en_birds):
+        check_eat_or_ed_=check_eat_or_ed(bird, en_birds)
+        if check_eat_or_ed_:
             bird.big_bird(0.06)
-        else:
+            score.score_up()
+        elif check_eat_or_ed_ == False:  # check_eat_or_ed_がNoneを返す時があるため、Falseで明示的に検知する
             life.life_decrease(screen)
 
 
