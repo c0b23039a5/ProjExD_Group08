@@ -385,13 +385,13 @@ class Life:
         self.image = self.fonto.render(f"Life: {self.life}", True, self.color)
         screen.blit(self.image, self.rect)
 
-    def life_decrease(self,screen: pg.Surface):
+    def life_decrease(self,screen: pg.Surface, num = 10):
                 print("Collision detected!")  # デバッグ用プリント
-                self.life -= 10
+                self.life -= num
                 print(f"Life decreased to: {self.life}")
 
 
-class Plane:
+class Plane(pg.sprite.Sprite):
     """
     飛行機に関するクラス
     """
@@ -399,15 +399,18 @@ class Plane:
     plane3_1 = pg.transform.flip(plane3, True, False)
     images = [pg.transform.rotozoom(pg.image.load("fig/plane.png"), 0, 0.5),pg.transform.rotozoom(pg.image.load("fig/plane2.png"), 0, 0.5),plane3_1]
     def __init__(self, bird: Bird):
-        self.plane = random.choice(self.images)
-        self.plane = pg.transform.flip(self.plane, False, False)
-        self.rct = self.plane.get_rect()
-        self.rct.center = (WIDTH, random.randint(0, HEIGHT))
+        super().__init__()
+        self.image = random.choice(self.images)
+        self.image = pg.transform.flip(self.image, False, False)
+        self.size = 3
+        self.mask = pg.mask.from_surface(self.image)  # 透明な部分を無視するsurface「mask」を追加、当たり判定にはこれを使う
+        self.rect = self.image.get_rect()
+        self.rect.center = (WIDTH, random.randint(0, HEIGHT))
         self.vx, self.vy = -10, 0  # 左方向に移動する速度ベクトル
         self.bird = bird
     def update(self, screen: pg.Surface):
-        self.rct.move_ip(self.vx, self.vy)
-        screen.blit(self.plane, self.rct)
+        self.rect.move_ip(self.vx, self.vy)
+        screen.blit(self.image, self.rect)
 
 
 def main():
@@ -421,7 +424,7 @@ def main():
     bg_image = pg.image.load("fig/sora.jpg")
     bird = Bird((300, 200))
     en_birds = pg.sprite.Group()
-    planes = []
+    planes = pg.sprite.Group()
     clock = pg.time.Clock()
     tmr = 0
     life = Life(bird, en_birds)
@@ -441,8 +444,8 @@ def main():
             if event.type == pg.QUIT:
                 return
         screen.blit(bg_image, [0, 0])
-        if random.randint(0, 1000) < 1:  # 0.5%の確率で新しい飛行機を生成
-            planes.append(Plane(bird))
+        if random.randint(0, 1000) < 10:  # 0.5%の確率で新しい飛行機を生成
+            planes.add(Plane(bird))
          # タイマーの更新と終了判定
         remaining_time = timer.update(screen)
         if remaining_time == 0:
@@ -474,11 +477,14 @@ def main():
             en_bird.update()
 
         check_eat_or_ed_=check_eat_or_ed(bird, en_birds)
+        check_eat_or_pl_=check_eat_or_ed(bird, planes)
         if check_eat_or_ed_:
             bird.big_bird(0.06)
             score.score_up()
         elif check_eat_or_ed_ == False:  # check_eat_or_ed_がNoneを返す時があるため、Falseで明示的に検知する
             life.life_decrease(screen)
+        elif check_eat_or_pl_ or check_eat_or_pl_ == False:
+            life.life_decrease(screen,10000000000000000)  # 飛行機が衝突したときにライフをマイナスにしてゲームオーバーにする
 
 
         en_birds.draw(screen)
