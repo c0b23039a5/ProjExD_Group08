@@ -16,9 +16,9 @@ def start_screen(screen: pg.Surface):
     ゲームのスタート画面を表示し、ユーザーの入力を待つ
     """
     # 背景画像やフォントの準備
-    bg_img = pg.image.load("fig/sora.jpg")  # 背景画像
-    kokaton_img = pg.image.load("fig/3.png")  # 背景画像
-    kokaton_img = pg.transform.scale(kokaton_img,(158, 168))
+    bg_image = pg.image.load("fig/sora.jpg")  # 背景画像
+    kokaton_image = pg.image.load("fig/3.png")  # 背景画像
+    kokaton_image = pg.transform.scale(kokaton_image,(158, 168))
     font_title = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 100)  # タイトル用フォント
     font_start = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 50)   # 説明用フォント
     font_rule = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 50)   # 説明用フォント
@@ -34,11 +34,11 @@ def start_screen(screen: pg.Surface):
         title_rect = title_text.get_rect(center=(WIDTH//2, HEIGHT//4))
         button_rect = start_text.get_rect(center=(WIDTH//3, (HEIGHT//5)*4))
         rule_rect = rule_text.get_rect(center=((WIDTH//3)*2, (HEIGHT//5)*4))
-        screen.blit(bg_img, [0, 0])
+        screen.blit(bg_image, [0, 0])
         screen.blit(title_text, title_rect)  # タイトルを描画
         screen.blit(start_surf, button_rect)  # 説明文を描画
         screen.blit(rule_text, rule_rect)  # 説明文を描画
-        screen.blit(kokaton_img, ((WIDTH//2)-100, (HEIGHT//2)-50)) #画像の描画
+        screen.blit(kokaton_image, ((WIDTH//2)-100, (HEIGHT//2)-50)) #画像の描画
         pg.display.update()
         # ユーザーの入力を待つ
         for event in pg.event.get():
@@ -60,7 +60,7 @@ def Howto_screen(screen: pg.Surface):
     # pg.mixer.music.play(-1) #音声を再生（無限ループ）
 
     # 背景画像やフォントの準備
-    bg_img = pg.image.load("fig/sora.jpg")  # 背景画像
+    bg_image = pg.image.load("fig/sora.jpg")  # 背景画像
     Howto_title = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 100)  # タイトル用フォント
     font_return = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 50)   # 説明用フォント
 
@@ -75,7 +75,7 @@ def Howto_screen(screen: pg.Surface):
         # テキストの位置調整
         title_rect = Howto_text.get_rect(center=(WIDTH//2, HEIGHT//4))
         return_rect = font_return.get_rect(center=(WIDTH//2, (HEIGHT//4)*3))
-        screen.blit(bg_img, [0, 0])
+        screen.blit(bg_image, [0, 0])
         screen.blit(Howto_text, title_rect)  # タイトルを描画
         screen.blit(font_return, return_rect)  # 戻るボタンを描画
         pg.display.update()
@@ -89,18 +89,16 @@ def Howto_screen(screen: pg.Surface):
                     return "play" # スタート画面終了
 
 
-
-
-def check_bound(obj_rct: pg.Rect) -> tuple[bool, bool]:
+def check_bound(obj_rect: pg.Rect) -> tuple[bool, bool]:
     """
     オブジェクトが画面内or画面外を判定し，真理値タプルを返す関数
     引数：こうかとんや爆弾，ビームなどのRect
     戻り値：横方向，縦方向のはみ出し判定結果（画面内：True／画面外：False）
     """
     yoko, tate = True, True
-    if obj_rct.left < 0 or WIDTH < obj_rct.right:
+    if obj_rect.left < 0 or WIDTH < obj_rect.right:
         yoko = False
-    if obj_rct.top < 0 or HEIGHT < obj_rct.bottom:
+    if obj_rect.top < 0 or HEIGHT < obj_rect.bottom:
         tate = False
     return yoko, tate
 
@@ -121,14 +119,14 @@ class Bird(pg.sprite.Sprite):
         こうかとん画像Surfaceを生成する
         引数 xy：こうかとん画像の初期位置座標タプル
         """
-        self.image = __class__.imgs[(+5, 0)]
+        self.size = 1
+        self.post_size = self.size  # 過去のサイズを記録する
+        self.post_angle = (+5, 0)  # 過去のアングルを記録する
+        self.dictionary((+5, 0),xy)
         self.mask = pg.mask.from_surface(self.image) # 透明な部分を無視するsurface「mask」を追加、当たり判定はこれを用いて行う
         self.rect: pg.Rect = self.image.get_rect()
-        self.rect.center = xy
-        self.size = 1
-        self.rect.center = xy
 
-    def change_img(self, num: int, screen: pg.Surface):
+    def change_image(self, num: int, screen: pg.Surface):
         """
         こうかとん画像を切り替え，画面に転送する
         引数1 num：こうかとん画像ファイル名の番号
@@ -159,7 +157,7 @@ class Bird(pg.sprite.Sprite):
         引数2 xy：座標の指定（任意）
         戻り値：こうかとんの状況(回転、サイズ、位置等)を適用したこうかとんの画像
         """
-        imgs = self.update_img()
+        imgs = self.update_image()
         if mv_angle == (0,0):  # こうかとんが静止しているときにでもサイズを更新するようにする。
             self.image = imgs[self.post_angle]
             self.update_rect(imgs)
@@ -173,23 +171,23 @@ class Bird(pg.sprite.Sprite):
           self.post_angle = mv_angle
           return self.image
 
-    def update_img(self):
+    def update_image(self):
         """
         こうかとんのサイズを反映したこうかとんの回転辞書
         引数なし
         戻り値：こうかとんのサイズを反映したこうかとんの回転辞書
         """
-        img0 = pg.image.load("fig/3.png")  # 左向き
-        img = pg.transform.flip(img0, True, False)  # デフォルトのこうかとん（右向き）
+        image0 = pg.image.load("fig/3.png")  # 左向き
+        image = pg.transform.flip(image0, True, False)  # デフォルトのこうかとん（右向き）
         imgs = {  # 0度から反時計回りに定義
-            (+5, 0): pg.transform.rotozoom(img, 0, self.size),  # 右
-            (+5, -5): pg.transform.rotozoom(img, 45, self.size),  # 右上
-            (0, -5): pg.transform.rotozoom(img, 90, self.size),  # 上
-            (-5, -5): pg.transform.rotozoom(img0, -45, self.size),  # 左上
-            (-5, 0): pg.transform.rotozoom(img0, 0, self.size),  # 左
-            (-5, +5): pg.transform.rotozoom(img0, 45, self.size),  # 左下
-            (0, +5): pg.transform.rotozoom(img, -90, self.size),  # 下
-            (+5, +5): pg.transform.rotozoom(img, -45, self.size),  # 右下
+            (+5, 0): pg.transform.rotozoom(image, 0, self.size),  # 右
+            (+5, -5): pg.transform.rotozoom(image, 45, self.size),  # 右上
+            (0, -5): pg.transform.rotozoom(image, 90, self.size),  # 上
+            (-5, -5): pg.transform.rotozoom(image0, -45, self.size),  # 左上
+            (-5, 0): pg.transform.rotozoom(image0, 0, self.size),  # 左
+            (-5, +5): pg.transform.rotozoom(image0, 45, self.size),  # 左下
+            (0, +5): pg.transform.rotozoom(image, -90, self.size),  # 下
+            (+5, +5): pg.transform.rotozoom(image, -45, self.size),  # 右下
         }
         return imgs
 
@@ -203,7 +201,7 @@ class Bird(pg.sprite.Sprite):
         self.rect.center = cache_center
 
 
-    def change_img(self, num: int, screen: pg.Surface):
+    def change_image(self, num: int, screen: pg.Surface):
         """
         こうかとん画像を切り替え，画面に転送する
         引数1 num：こうかとん画像ファイル名の番号
@@ -218,7 +216,7 @@ class Bird(pg.sprite.Sprite):
         引数1 key_lst：押下キーの真理値リスト
         引数2 screen：画面Surface
         """
-        imgs = self.update_img()
+        imgs = self.update_image()
         sum_mv = [0, 0]
         for k, mv in __class__.delta.items():
             if key_lst[k]:
@@ -249,7 +247,7 @@ class Bird(pg.sprite.Sprite):
                 if WIDTH < self.rect.right:
                     self.rect.right = WIDTH  # 画面内に強制移動
         if not (sum_mv[0] == 0 and sum_mv[1] == 0):
-            self.image = __class__.imgs[tuple(sum_mv)]
+            self.dictionary(tuple(sum_mv))
             self.mask = pg.mask.from_surface(self.image)
         if not self.size == self.post_size or not self.post_angle == (sum_mv):
             self.dictionary(tuple(sum_mv))
@@ -353,8 +351,8 @@ class Life:
         self.fonto = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 30)
         self.color = (0, 0, 255)
         self.life = 30
-        self.img = self.fonto.render(f"Life: {self.life}", True, self.color)
-        self.rect = self.img.get_rect()
+        self.image = self.fonto.render(f"Life: {self.life}", True, self.color)
+        self.rect = self.image.get_rect()
         self.rect.bottomleft = (300, HEIGHT - 50)
         self.bird = bird
         self.bombs = bombs
@@ -362,12 +360,12 @@ class Life:
 
     def update(self, screen: pg.Surface):
         # ライフの文字列を更新
-        self.img = self.fonto.render(f"Life: {self.life}", True, self.color)
-        screen.blit(self.img, self.rect)
+        self.image = self.fonto.render(f"Life: {self.life}", True, self.color)
+        screen.blit(self.image, self.rect)
 
     def life_decrease(self):
         for bomb in self.bombs:
-            if self.bird.rct.colliderect(bomb.rct):
+            if self.bird.rect.colliderect(bomb.rect):
                 print("Collision detected!")  # デバッグ用プリント
                 self.life -= 10
                 print(f"Life decreased to: {self.life}")
@@ -383,7 +381,7 @@ def main():
     score = Score()
     pg.display.set_caption("たたかえ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
-    bg_img = pg.image.load("fig/sora.jpg")
+    bg_image = pg.image.load("fig/sora.jpg")
     bird = Bird((300, 200))
     bomb = Bomb((255, 0, 0), 10)
     # bomb2 = Bomb((0, 0, 255), 20)
@@ -409,14 +407,14 @@ def main():
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 return
-        screen.blit(bg_img, [0, 0])
+        screen.blit(bg_image, [0, 0])
 
 
         for bomb in bombs:  # 仮 爆弾を魚だと仮定して
-            if bird.rct.colliderect(bomb.rct):
+            if bird.rect.colliderect(bomb.rect):
             # if life.life <= 0:
                 # ゲームオーバー時に，こうかとん画像を切り替え，1秒間表示させる
-                # bird.change_img(8, screen)
+                # bird.change_image(8, screen)
                 # fonto = pg.font.Font(None, 80)
                 # txt = fonto.render("Game Over", True, (255, 0, 0))
                 # screen.blit(txt, [WIDTH//2-150, HEIGHT//2])
