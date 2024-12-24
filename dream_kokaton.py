@@ -29,24 +29,24 @@ def start_screen(screen: pg.Surface):
     title_text = font_title.render("ドリームバード", True, (255, 255, 255))
     start_text = font_start.render("スタート", True, (255, 255, 255))
     rule_text = font_rule.render("遊び方", True, (255, 255, 255))
-   
+
     while True:
         title_rect = title_text.get_rect(center=(WIDTH//2, HEIGHT//4))
         button_rect = start_text.get_rect(center=(WIDTH//3, (HEIGHT//5)*4))
         rule_rect = rule_text.get_rect(center=((WIDTH//3)*2, (HEIGHT//5)*4))
-        
-        screen.blit(bg_img, [0, 0])
-        
+
+        screen.blit(bg_image, [0, 0])
+
         pg.draw.rect(screen, (142, 206, 254), button_rect.inflate(20, 20), border_radius=10)  # スタートボタン背景
         pg.draw.rect(screen, (142, 206, 254), rule_rect.inflate(20, 20), border_radius=10)   # 遊び方ボタン背景
-      
-      
+
+
         screen.blit(title_text, title_rect)  # タイトルを描画
         screen.blit(start_text, button_rect)  # 説明文を描画
         screen.blit(rule_text, rule_rect)  # 説明文を描画
         screen.blit(kokaton_image, ((WIDTH//2)-100, (HEIGHT//2)-50))  #画像の描画
         pg.display.update()
-        
+
         # ユーザーの入力を待つ
         for event in pg.event.get():
             if event.type == pg.QUIT:
@@ -91,11 +91,11 @@ def Howto_screen(screen: pg.Surface):
     bg_image = pg.image.load("fig/sora.jpg")  # 背景画像
     Howto_title = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 40)  # タイトル用フォント
     font_return = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 40)   # 説明用フォント
-    
+
     # テキストの描画
     Howto_text = Howto_title.render("遊び方", True, WHITE)
     font_return = font_return.render("<閉じる>", True, BLACK)
-   
+
     while True:
         # 半透明なテキストSurfaceを作成
         Howto_surf = Howto_text.convert_alpha()
@@ -147,17 +147,17 @@ class Bird(pg.sprite.Sprite):
         pg.K_LEFT: (-5, 0),
         pg.K_RIGHT: (+5, 0),
     }
-    img0 = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9)
-    img = pg.transform.flip(img0, True, False)  # デフォルトのこうかとん（右向き）
-    imgs = {  # 0度から反時計回りに定義
-        (+5, 0): img,  # 右
-        (+5, -5): pg.transform.rotozoom(img, 45, 0.9),  # 右上
-        (0, -5): pg.transform.rotozoom(img, 90, 0.9),  # 上
-        (-5, -5): pg.transform.rotozoom(img0, -45, 0.9),  # 左上
-        (-5, 0): img0,  # 左
-        (-5, +5): pg.transform.rotozoom(img0, 45, 0.9),  # 左下
-        (0, +5): pg.transform.rotozoom(img, -90, 0.9),  # 下
-        (+5, +5): pg.transform.rotozoom(img, -45, 0.9),  # 右下
+    image0 = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9)
+    image = pg.transform.flip(image0, True, False)  # デフォルトのこうかとん（右向き）
+    images = {  # 0度から反時計回りに定義
+        (+5, 0): image,  # 右
+        (+5, -5): pg.transform.rotozoom(image, 45, 0.9),  # 右上
+        (0, -5): pg.transform.rotozoom(image, 90, 0.9),  # 上
+        (-5, -5): pg.transform.rotozoom(image0, -45, 0.9),  # 左上
+        (-5, 0): image0,  # 左
+        (-5, +5): pg.transform.rotozoom(image0, 45, 0.9),  # 左下
+        (0, +5): pg.transform.rotozoom(image, -90, 0.9),  # 下
+        (+5, +5): pg.transform.rotozoom(image, -45, 0.9),  # 右下
     }
 
     def __init__(self, xy: tuple[int, int]):
@@ -202,17 +202,17 @@ class Bird(pg.sprite.Sprite):
         引数2 xy：座標の指定（任意）
         戻り値：こうかとんの状況(回転、サイズ、位置等)を適用したこうかとんの画像
         """
-        imgs = self.update_image()
+        images = self.update_image()
         if mv_angle == (0,0):  # こうかとんが静止しているときにでもサイズを更新するようにする。
-            self.image = imgs[self.post_angle]
-            self.mask = pg.mask.from_surface(imgs[(+5,0)])  # 透明な部分を無視するsurface「mask」を追加、当たり判定はこれを用いて行う
+            self.image = images[self.post_angle]
+            self.mask = pg.mask.from_surface(images[(+5,0)])  # 透明な部分を無視するsurface「mask」を追加、当たり判定はこれを用いて行う
         else:  # こうかとんが移動しているとき
-            self.image = imgs[mv_angle]
+            self.image = images[mv_angle]
             if xy:
                 self.rect: pg.Rect = self.image.get_rect()
                 self.rect.center = xy
                 self.post_angle = mv_angle
-                self.mask = pg.mask.from_surface(imgs[(+5,0)])  # 透明な部分を無視するsurface「mask」を追加、当たり判定はこれを用いて行う
+                self.mask = pg.mask.from_surface(images[(+5,0)])  # 透明な部分を無視するsurface「mask」を追加、当たり判定はこれを用いて行う
             return self.image
 
     def update_image(self):
@@ -223,7 +223,7 @@ class Bird(pg.sprite.Sprite):
         """
         image0 = pg.image.load("fig/3.png")  # 左向き
         image = pg.transform.flip(image0, True, False)  # デフォルトのこうかとん（右向き）
-        imgs = {  # 0度から反時計回りに定義
+        images = {  # 0度から反時計回りに定義
             (+5, 0): pg.transform.rotozoom(image, 0, self.size),  # 右
             (+5, -5): pg.transform.rotozoom(image, 45, self.size),  # 右上
             (0, -5): pg.transform.rotozoom(image, 90, self.size),  # 上
@@ -233,7 +233,7 @@ class Bird(pg.sprite.Sprite):
             (0, +5): pg.transform.rotozoom(image, -90, self.size),  # 下
             (+5, +5): pg.transform.rotozoom(image, -45, self.size),  # 右下
         }
-        return imgs
+        return images
 
     def update(self, key_lst: list[bool], screen: pg.Surface):
         """
@@ -241,7 +241,7 @@ class Bird(pg.sprite.Sprite):
         引数1 key_lst：押下キーの真理値リスト
         引数2 screen：画面Surface
         """
-        imgs = self.update_image()
+        images = self.update_image()
         sum_mv = [0, 0]
         for k, mv in __class__.delta.items():
             if key_lst[k]:
@@ -254,14 +254,14 @@ class Bird(pg.sprite.Sprite):
                 self.post_angle == (-5, +5) or  # 左下
                 self.post_angle == (+5, +5)):  # 右下
                     # こうかとんが斜めの状態だとheightとwidthが斜めではないときよりも長くなるため
-                    if self.rect.top < imgs[(+5, -5)].get_rect().height/8:
-                        self.rect.top = 0 - imgs[(+5, -5)].get_rect().height/8  # 画面内に強制移動
-                    if HEIGHT - imgs[(+5, -5)].get_rect().height/8 < self.rect.bottom:
-                        self.rect.bottom = HEIGHT - imgs[(+5, -5)].get_rect().height/8  # 画面内に強制移動
-                    if self.rect.left < imgs[(+5, -5)].get_rect().width/8:
-                        self.rect.left = 0 - imgs[(+5, -5)].get_rect().width/8  # 画面内に強制移動
-                    if WIDTH - imgs[(+5, -5)].get_rect().width/8 < self.rect.right:
-                        self.rect.right = WIDTH - imgs[(+5, -5)].get_rect().width/8  # 画面内に強制移動
+                    if self.rect.top < images[(+5, -5)].get_rect().height/8:
+                        self.rect.top = 0 - images[(+5, -5)].get_rect().height/8  # 画面内に強制移動
+                    if HEIGHT - images[(+5, -5)].get_rect().height/8 < self.rect.bottom:
+                        self.rect.bottom = HEIGHT - images[(+5, -5)].get_rect().height/8  # 画面内に強制移動
+                    if self.rect.left < images[(+5, -5)].get_rect().width/8:
+                        self.rect.left = 0 - images[(+5, -5)].get_rect().width/8  # 画面内に強制移動
+                    if WIDTH - images[(+5, -5)].get_rect().width/8 < self.rect.right:
+                        self.rect.right = WIDTH - images[(+5, -5)].get_rect().width/8  # 画面内に強制移動
             else:
                 if self.rect.top < 0:
                     self.rect.top = 0  # 画面内に強制移動
@@ -315,13 +315,13 @@ class Enemy(pg.sprite.Sprite):
     """
     敵バードに関するクラス
     """
-    imgs = [pg.image.load(f"en_bird/bird{i}.png") for i in range(1, 9)]
+    images = [pg.image.load(f"en_bird/bird{i}.png") for i in range(1, 9)]
     start_move_lst = [[0, +6], [WIDTH, -6]]  # 初期位置と移動速度をまとめたリスト
     def __init__(self):
         super().__init__()
         start_move_idx = random.randint(0, 1)  # start_move_lstのインデックスを決める変数(どちらからスタートし、どちらに動くか決める)
         self.size = random.randint(1, 8)  # 鳥の大きさを決める変数
-        self.image = pg.transform.rotozoom(__class__.imgs[self.size-1], 0, 0.1*self.size)
+        self.image = pg.transform.rotozoom(__class__.images[self.size-1], 0, 0.1*self.size)
         if start_move_idx == 0:  # スタート位置が左端のとき画像を反転させる
             self.image = pg.transform.flip(self.image, True, False)
         self.mask = pg.mask.from_surface(self.image)  # 透明な部分を無視するsurface「mask」を追加、当たり判定にはこれを使う
@@ -355,8 +355,8 @@ class Timer:
 
         # タイマー表示
         timer_text = f"{minutes:02}:{seconds:02}"  # 分:秒形式
-        img = self.font.render(timer_text, True, self.color)
-        screen.blit(img, (WIDTH - 200, 50))  # 画面右上に表示
+        image = self.font.render(timer_text, True, self.color)
+        screen.blit(image, (WIDTH - 200, 50))  # 画面右上に表示
 
         return remaining_time  # 残り時間を返す
 
