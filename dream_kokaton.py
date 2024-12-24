@@ -8,7 +8,6 @@ import pygame as pg
 
 WIDTH = 1100  # ゲームウィンドウの幅
 HEIGHT = 650  # ゲームウィンドウの高さ
-NUM_OF_BOMBS = 5  # 爆弾の個数
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 def start_screen(screen: pg.Surface):
@@ -377,13 +376,10 @@ def main():
     pg.display.set_caption("たたかえ！こうかとん")
     bg_image = pg.image.load("fig/sora.jpg")
     bird = Bird((300, 200))
-    bomb = Bomb((255, 0, 0), 10)
-    # bomb2 = Bomb((0, 0, 255), 20)
-    bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)]
     en_birds = pg.sprite.Group()
     clock = pg.time.Clock()
     tmr = 0
-    life = Life(bird, bombs)
+    life = Life(bird, en_birds)
     while True:
         if screen_scene == 0:
             if start_screen(screen) == "play":
@@ -402,18 +398,18 @@ def main():
         screen.blit(bg_image, [0, 0])
 
 
-        for bomb in bombs:  # 仮 爆弾を魚だと仮定して
-            if bird.rect.colliderect(bomb.rect):
-            # if life.life <= 0:
-                # ゲームオーバー時に，こうかとん画像を切り替え，1秒間表示させる
-                # bird.change_image(8, screen)
-                # fonto = pg.font.Font(None, 80)
-                # txt = fonto.render("Game Over", True, (255, 0, 0))
-                # screen.blit(txt, [WIDTH//2-150, HEIGHT//2])
-                bird.big_bird(0.02)
-                # pg.display.update()
-                # time.sleep(1)
-                # return
+        # for bomb in bombs:  # 仮 爆弾を魚だと仮定して
+        #     if bird.rect.colliderect(bomb.rect):
+        #     # if life.life <= 0:
+        #         # ゲームオーバー時に，こうかとん画像を切り替え，1秒間表示させる
+        #         # bird.change_image(8, screen)
+        #         # fonto = pg.font.Font(None, 80)
+        #         # txt = fonto.render("Game Over", True, (255, 0, 0))
+        #         # screen.blit(txt, [WIDTH//2-150, HEIGHT//2])
+        #         bird.big_bird(0.02)
+        #         # pg.display.update()
+        #         # time.sleep(1)
+        #         # return
 
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
@@ -426,12 +422,16 @@ def main():
             en_birds.add(Enemy())
         for en_bird in en_birds:
             en_bird.update()
-        check_eat_or_ed(bird, en_birds)
+
+        if check_eat_or_ed(bird, en_birds):
+            bird.big_bird(0.06)
+        else:
+            life.life_decrease()
+
 
         en_birds.draw(screen)
         score.update(screen)
         life.update(screen)
-        life.life_decrease()
         pg.display.update()
         tmr += 1
         clock.tick(50)
