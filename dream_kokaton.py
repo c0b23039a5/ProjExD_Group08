@@ -15,7 +15,7 @@ def start_screen(screen: pg.Surface):
     ゲームのスタート画面を表示し、ユーザーの入力を待つ
     """
 
-    color = 200
+    
     # 背景画像やフォントの準備
     bg_img = pg.image.load("fig/sora.jpg")  # 背景画像
     kokaton_img = pg.image.load("fig/3.png")  # 背景画像
@@ -45,7 +45,7 @@ def start_screen(screen: pg.Surface):
         screen.blit(start_surf, button_rect)  # 説明文を描画
         screen.blit(rule_text, rule_rect)  # 説明文を描画
         screen.blit(kokaton_img, ((WIDTH//2)-100, (HEIGHT//2)-50)) #画像の描画
-        pg.display.update()
+        pg.display.update() 
 
         # ユーザーの入力を待つ
         for event in pg.event.get():
