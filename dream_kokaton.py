@@ -14,7 +14,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 def start_screen(screen: pg.Surface):
     """
     ゲームのスタート画面を表示し、ユーザーの入力を待つ
-    """    
+    """
     # 背景画像やフォントの準備
     bg_img = pg.image.load("fig/sora.jpg")  # 背景画像
     kokaton_img = pg.image.load("fig/3.png")  # 背景画像
@@ -39,7 +39,7 @@ def start_screen(screen: pg.Surface):
         screen.blit(start_surf, button_rect)  # 説明文を描画
         screen.blit(rule_text, rule_rect)  # 説明文を描画
         screen.blit(kokaton_img, ((WIDTH//2)-100, (HEIGHT//2)-50)) #画像の描画
-        pg.display.update() 
+        pg.display.update()
         # ユーザーの入力を待つ
         for event in pg.event.get():
             if event.type == pg.QUIT:
@@ -58,16 +58,16 @@ def Howto_screen(screen: pg.Surface):
     """
     # pg.mixer.music.load("sound/_Albatross.mp3") #音声ファイルの読み込み
     # pg.mixer.music.play(-1) #音声を再生（無限ループ）
-    
+
     # 背景画像やフォントの準備
     bg_img = pg.image.load("fig/sora.jpg")  # 背景画像
     Howto_title = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 100)  # タイトル用フォント
     font_return = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 50)   # 説明用フォント
-    
+
     # テキストの描画
     Howto_text = Howto_title.render("遊び方を書くページだよ", True, (255, 255, 255))
     font_return = font_return.render("戻る", True, (2, 200, 0))
-    
+
     while True:
         # 半透明なテキストSurfaceを作成
         Howto_surf = Howto_text.convert_alpha()
@@ -79,7 +79,7 @@ def Howto_screen(screen: pg.Surface):
         screen.blit(Howto_text, title_rect)  # タイトルを描画
         screen.blit(font_return, return_rect)  # 戻るボタンを描画
         pg.display.update()
-        
+
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 pg.quit()
@@ -87,7 +87,7 @@ def Howto_screen(screen: pg.Surface):
             if event.type == pg.MOUSEBUTTONDOWN:  # マウスクリックの検知
                 if return_rect.collidepoint(event.pos):  # クリック位置がボタン内かを判定
                     return "play" # スタート画面終了
-        
+
 
 
 
@@ -325,7 +325,6 @@ class Score:
 
     def update(self, screen: pg.Surface):
         # スコアの文字列を更新
-<<<<<<< HEAD
         self.image = self.fonto.render(f"Score: {self.score}", True, self.color)
         screen.blit(self.image, self.rect)
 
@@ -345,9 +344,6 @@ def check_eat_or_ed(bird: Bird, en_birds: pg.sprite.Group):
                     return 0
                 else:
                     return 1
-=======
-        self.img = self.fonto.render(f"Score: {self.score}", True, self.color)
-        screen.blit(self.img, self.rect)
 
 class Life:
     """
@@ -362,7 +358,7 @@ class Life:
         self.rect.bottomleft = (300, HEIGHT - 50)
         self.bird = bird
         self.bombs = bombs
-  
+
 
     def update(self, screen: pg.Surface):
         # ライフの文字列を更新
@@ -374,11 +370,10 @@ class Life:
             if self.bird.rct.colliderect(bomb.rct):
                 print("Collision detected!")  # デバッグ用プリント
                 self.life -= 10
-                print(f"Life decreased to: {self.life}")  
+                print(f"Life decreased to: {self.life}")
                 self.bombs.remove(bomb)
                 break
->>>>>>> C0B23011/gameover
-        
+
 def main():
     pg.mixer.music.load("sound/_Albatross.mp3") #音声ファイルの読み込み
     pg.mixer.music.play(-1) #音声を再生（無限ループ）
@@ -391,14 +386,14 @@ def main():
     bg_img = pg.image.load("fig/sora.jpg")
     bird = Bird((300, 200))
     bomb = Bomb((255, 0, 0), 10)
-    # bomb2 = Bomb((0, 0, 255), 20)   
-    bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)] 
+    # bomb2 = Bomb((0, 0, 255), 20)
+    bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)]
     en_birds = pg.sprite.Group()
     # bomb2 = Bomb((0, 0, 255), 20)
     bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)]
     clock = pg.time.Clock()
     tmr = 0
-    life = Life(bird, bombs) 
+    life = Life(bird, bombs)
     while True:
         if screen_scene == 0:
             if start_screen(screen) == "play":
@@ -415,15 +410,11 @@ def main():
             if event.type == pg.QUIT:
                 return
         screen.blit(bg_img, [0, 0])
-<<<<<<< HEAD
+
 
         for bomb in bombs:  # 仮 爆弾を魚だと仮定して
             if bird.rct.colliderect(bomb.rct):
-=======
-        
-        for bomb in bombs:
-            if life.life <= 0:
->>>>>>> C0B23011/gameover
+            # if life.life <= 0:
                 # ゲームオーバー時に，こうかとん画像を切り替え，1秒間表示させる
                 # bird.change_img(8, screen)
                 # fonto = pg.font.Font(None, 80)
