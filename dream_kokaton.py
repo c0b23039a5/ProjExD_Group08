@@ -44,8 +44,8 @@ class Bird:
         """
         self.size = 0.9  # こうかとんのサイズ
         self.dictionary((+5, 0),xy)  # こうかとんが右に向く
-        self.post_size = self.size
-        self.post_angle = (+5, 0)
+        self.post_size = self.size  # 過去のサイズを記録する
+        self.post_angle = (+5, 0)  # 過去のアングルを記録する
 
     def big_bird(self, num:float):
         """
@@ -64,28 +64,30 @@ class Bird:
         """
         こうかとんに関するパラメーター（回転、サイズ）の動的辞書
         引数1 my_angle：こうかとんが移動している角度
-        引数2 xy：座標の指定をする場合は、指定をする。
+        引数2 xy：座標の指定（任意）
+        戻り値：こうかとんの状況(回転、サイズ、位置等)を適用したこうかとんの画像
         """
         imgs = self.update_img()
         if mv_angle == (0,0):  # こうかとんが静止しているときにでもサイズを更新するようにする。
             self.img = imgs[self.post_angle]
-            self.update_rect(imgs,mv_angle)
+            self.update_rect(imgs)
         else:  # こうかとんが移動しているとき
           self.img = imgs[mv_angle]
           if xy:
             self.rct: pg.Rect = self.img.get_rect()
             self.rct.center = xy
           else:
-            self.update_rect(imgs,mv_angle)
+            self.update_rect(imgs)
           self.post_angle = mv_angle
           return self.img
 
     def update_img(self):
         """
-        こうかとんのサイズを大きさを反映した動的辞書
+        こうかとんのサイズを反映したこうかとんの回転辞書
         引数なし
+        戻り値：こうかとんのサイズを反映したこうかとんの回転辞書
         """
-        img0 = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, self.size)  # 左向き
+        img0 = pg.image.load("fig/3.png")  # 左向き
         img = pg.transform.flip(img0, True, False)  # デフォルトのこうかとん（右向き）
         imgs = {  # 0度から反時計回りに定義
             (+5, 0): pg.transform.rotozoom(img, 0, self.size),  # 右
@@ -101,7 +103,7 @@ class Bird:
 
     def update_rect(self,imgs):
         """
-        こうかとんのサイズを大きくしたときあたり判定も更新するようにする
+        こうかとんのサイズを大きくしたときあたり判定を更新する
         引数 imgs: 画像を回転する辞書
         """
         cache_center = self.rct.center  # self.rctを代入するとself.rct.centerのデータが失われてしまうため
@@ -135,7 +137,8 @@ class Bird:
             if (self.post_angle == (+5, -5) or  # 右上
                 self.post_angle == (-5, -5) or  # 左上
                 self.post_angle == (-5, +5) or  # 左下
-                self.post_angle == (+5, +5)):
+                self.post_angle == (+5, +5)):  # 右下
+                    # こうかとんが斜めの状態だとheightとwidthが斜めではないときよりも長くなるため
                     if self.rct.top < imgs[(+5, -5)].get_rect().height/8:
                         self.rct.top = 0 - imgs[(+5, -5)].get_rect().height/8  # 画面内に強制移動
                     if HEIGHT - imgs[(+5, -5)].get_rect().height/8 < self.rct.bottom:
