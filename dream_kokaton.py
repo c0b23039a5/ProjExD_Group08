@@ -24,7 +24,7 @@ def start_screen(screen: pg.Surface):
     font_start = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 50)   # 説明用フォント
     font_rule = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 50)   # 説明用フォント
     # テキストの描画
-    title_text = font_title.render("ゲームタイトル", True, (255, 255, 255))
+    title_text = font_title.render("ドリームバード", True, (255, 255, 255))
     start_text = font_start.render("スタート", True, (2, 200, 0))
     rule_text = font_rule.render("遊び方", True, (2, 200, 0))
     while True:
@@ -398,7 +398,7 @@ def main():
     screen = pg.display.set_mode((WIDTH, HEIGHT))
     score = Score()
     timer = Timer(30)
-    pg.display.set_caption("たたかえ！こうかとん")
+    pg.display.set_caption("ドリームバード")
     bg_image = pg.image.load("fig/sora.jpg")
     bird = Bird((300, 200))
     en_birds = pg.sprite.Group()
