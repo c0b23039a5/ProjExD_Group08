@@ -391,6 +391,25 @@ class Life:
                 print(f"Life decreased to: {self.life}")
 
 
+class Plane:
+    """
+    飛行機に関するクラス
+    """
+    plane3 = pg.transform.rotozoom(pg.image.load("fig/plane3.png"), 0, 0.5)
+    plane3_1 = pg.transform.flip(plane3, True, False)
+    images = [pg.transform.rotozoom(pg.image.load("fig/plane.png"), 0, 0.5),pg.transform.rotozoom(pg.image.load("fig/plane2.png"), 0, 0.5),plane3_1]
+    def __init__(self, bird: Bird):
+        self.plane = random.choice(self.images)
+        self.plane = pg.transform.flip(self.plane, False, False)
+        self.rct = self.plane.get_rect()
+        self.rct.center = (WIDTH, random.randint(0, HEIGHT))
+        self.vx, self.vy = -10, 0  # 左方向に移動する速度ベクトル
+        self.bird = bird
+    def update(self, screen: pg.Surface):
+        self.rct.move_ip(self.vx, self.vy)
+        screen.blit(self.plane, self.rct)
+
+
 def main():
     pg.mixer.music.load("sound/_Albatross.mp3")  #音声ファイルの読み込み
     pg.mixer.music.play(-1)  #音声を再生（無限ループ）
@@ -422,6 +441,8 @@ def main():
             if event.type == pg.QUIT:
                 return
         screen.blit(bg_image, [0, 0])
+        if random.randint(0, 1000) < 1:  # 0.5%の確率で新しい飛行機を生成
+            planes.append(Plane(bird))
          # タイマーの更新と終了判定
         remaining_time = timer.update(screen)
         if remaining_time == 0:
