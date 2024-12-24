@@ -410,22 +410,6 @@ class Life:
         # self.image = self.fonto.render(f"Score: {self.score}", True, self.color)
         screen.blit(self.image, self.rect)
 
-def check_eat_or_ed(bird: Bird, en_birds: pg.sprite.Group):
-    """
-    こうかとんと敵バードが当たった時に値を返す関数
-    返り値:
-    こうかとんのsizeの方が大きい場合:1
-    敵のsizeの方が大きい場合:0
-    引数1 bird: birdクラスのこうかとん
-    引数2 en_birds Enemyクラスの敵バードを要素に持つ、Groupクラス
-    """
-    for en_bird in pg.sprite.spritecollide(bird, en_birds, False): # こうかとんと敵バードの当たり判定について
-            offset = (bird.rect.x - en_bird.rect.x, bird.rect.y - en_bird.rect.y)
-            if en_bird.mask.overlap(bird.mask, offset):
-                if bird.size < en_bird.size:
-                    return 0
-                else:
-                    return 1
 
 def main():
     pg.mixer.music.load("sound/_Albatross.mp3")  #音声ファイルの読み込み
