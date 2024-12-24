@@ -26,7 +26,7 @@ def check_bound(obj_rct: pg.Rect) -> tuple[bool, bool]:
     return yoko, tate
 
 
-class Bird:
+class Bird(pg.sprite.Sprite):
     """
     ゲームキャラクター（こうかとん）に関するクラス
     """
@@ -42,10 +42,23 @@ class Bird:
         こうかとん画像Surfaceを生成する
         引数 xy：こうかとん画像の初期位置座標タプル
         """
-        self.size = 0.9  # こうかとんのサイズ
-        self.dictionary((+5, 0),xy)  # こうかとんが右に向く
-        self.post_size = self.size  # 過去のサイズを記録する
-        self.post_angle = (+5, 0)  # 過去のアングルを記録する
+        self.image = __class__.imgs[(+5, 0)]
+        self.mask = pg.mask.from_surface(self.image) # 透明な部分を無視するsurface「mask」を追加、当たり判定はこれを用いて行う
+        self.rect: pg.Rect = self.image.get_rect()
+        self.rect.center = xy
+        self.size = 1
+        self.rect.center = xy
+
+    def change_img(self, num: int, screen: pg.Surface):
+        """
+        こうかとん画像を切り替え，画面に転送する
+        引数1 num：こうかとん画像ファイル名の番号
+        引数2 screen：画面Surface
+        """
+        self.image = pg.transform.rotozoom(pg.image.load(f"fig/{num}.png"), 0, 0.9)
+        self.mask = pg.mask.from_surface(self.image)
+        screen.blit(self.image, self.rect)
+
 
     def big_bird(self, num:float):
         """
@@ -54,7 +67,7 @@ class Bird:
         """
         if num < 0 and self.size < 0.5:  # こうかとんが小さくなりすぎてどこに居るのかが分からなくならないようにする
             pass
-        elif min(WIDTH,HEIGHT) > self.size*self.rct.height/2:  # ウィンドウサイズより大きくならないようにする
+        elif min(WIDTH,HEIGHT) > self.size*self.rect.height/2:  # ウィンドウサイズより大きくならないようにする
             self.size += num  # numの増減に合わせてこうかとんのサイズを定義する
 
         if self.size < 0:  # こうかとんのサイズがマイナスにならないようにする
@@ -69,17 +82,17 @@ class Bird:
         """
         imgs = self.update_img()
         if mv_angle == (0,0):  # こうかとんが静止しているときにでもサイズを更新するようにする。
-            self.img = imgs[self.post_angle]
+            self.image = imgs[self.post_angle]
             self.update_rect(imgs)
         else:  # こうかとんが移動しているとき
-          self.img = imgs[mv_angle]
+          self.image = imgs[mv_angle]
           if xy:
-            self.rct: pg.Rect = self.img.get_rect()
-            self.rct.center = xy
+            self.rect: pg.Rect = self.image.get_rect()
+            self.rect.center = xy
           else:
             self.update_rect(imgs)
           self.post_angle = mv_angle
-          return self.img
+          return self.image
 
     def update_img(self):
         """
@@ -106,9 +119,9 @@ class Bird:
         こうかとんのサイズを大きくしたときあたり判定を更新する
         引数 imgs: 画像を回転する辞書
         """
-        cache_center = self.rct.center  # self.rctを代入するとself.rct.centerのデータが失われてしまうため
-        self.rct: pg.Rect = imgs[(+5,0)].get_rect()  # こうかとんの画像が斜めのときあたり判定が広くなるため、斜めではないときの画像のあたり判定に固定する。
-        self.rct.center = cache_center
+        cache_center = self.rect.center  # self.rectを代入するとself.rect.centerのデータが失われてしまうため
+        self.rect: pg.Rect = imgs[(+5,0)].get_rect()  # こうかとんの画像が斜めのときあたり判定が広くなるため、斜めではないときの画像のあたり判定に固定する。
+        self.rect.center = cache_center
 
 
     def change_img(self, num: int, screen: pg.Surface):
@@ -117,8 +130,8 @@ class Bird:
         引数1 num：こうかとん画像ファイル名の番号
         引数2 screen：画面Surface
         """
-        self.img = pg.transform.rotozoom(pg.image.load(f"fig/{num}.png"), 0, self.size)
-        screen.blit(self.img, self.rct)
+        self.image = pg.transform.rotozoom(pg.image.load(f"fig/{num}.png"), 0, self.size)
+        screen.blit(self.image, self.rect)
 
     def update(self, key_lst: list[bool], screen: pg.Surface):
         """
@@ -132,35 +145,37 @@ class Bird:
             if key_lst[k]:
                 sum_mv[0] += mv[0]
                 sum_mv[1] += mv[1]
-        self.rct.move_ip(sum_mv)
-        if check_bound(self.rct) != (True, True):
+        self.rect.move_ip(sum_mv)
+        if check_bound(self.rect) != (True, True):
             if (self.post_angle == (+5, -5) or  # 右上
                 self.post_angle == (-5, -5) or  # 左上
                 self.post_angle == (-5, +5) or  # 左下
                 self.post_angle == (+5, +5)):  # 右下
                     # こうかとんが斜めの状態だとheightとwidthが斜めではないときよりも長くなるため
-                    if self.rct.top < imgs[(+5, -5)].get_rect().height/8:
-                        self.rct.top = 0 - imgs[(+5, -5)].get_rect().height/8  # 画面内に強制移動
-                    if HEIGHT - imgs[(+5, -5)].get_rect().height/8 < self.rct.bottom:
-                        self.rct.bottom = HEIGHT - imgs[(+5, -5)].get_rect().height/8  # 画面内に強制移動
-                    if self.rct.left < imgs[(+5, -5)].get_rect().width/8:
-                        self.rct.left = 0 - imgs[(+5, -5)].get_rect().width/8  # 画面内に強制移動
-                    if WIDTH - imgs[(+5, -5)].get_rect().width/8 < self.rct.right:
-                        self.rct.right = WIDTH - imgs[(+5, -5)].get_rect().width/8   # 画面内に強制移動
+                    if self.rect.top < imgs[(+5, -5)].get_rect().height/8:
+                        self.rect.top = 0 - imgs[(+5, -5)].get_rect().height/8  # 画面内に強制移動
+                    if HEIGHT - imgs[(+5, -5)].get_rect().height/8 < self.rect.bottom:
+                        self.rect.bottom = HEIGHT - imgs[(+5, -5)].get_rect().height/8  # 画面内に強制移動
+                    if self.rect.left < imgs[(+5, -5)].get_rect().width/8:
+                        self.rect.left = 0 - imgs[(+5, -5)].get_rect().width/8  # 画面内に強制移動
+                    if WIDTH - imgs[(+5, -5)].get_rect().width/8 < self.rect.right:
+                        self.rect.right = WIDTH - imgs[(+5, -5)].get_rect().width/8   # 画面内に強制移動
             else:
-                if self.rct.top < 0:
-                    self.rct.top = 0  # 画面内に強制移動
-                if HEIGHT < self.rct.bottom:
-                    self.rct.bottom = HEIGHT  # 画面内に強制移動
-                if self.rct.left <0:
-                    self.rct.left = 0  # 画面内に強制移動
-                if WIDTH < self.rct.right:
-                    self.rct.right = WIDTH  # 画面内に強制移動
-
+                if self.rect.top < 0:
+                    self.rect.top = 0  # 画面内に強制移動
+                if HEIGHT < self.rect.bottom:
+                    self.rect.bottom = HEIGHT  # 画面内に強制移動
+                if self.rect.left <0:
+                    self.rect.left = 0  # 画面内に強制移動
+                if WIDTH < self.rect.right:
+                    self.rect.right = WIDTH  # 画面内に強制移動
+        if not (sum_mv[0] == 0 and sum_mv[1] == 0):
+            self.image = __class__.imgs[tuple(sum_mv)]
+            self.mask = pg.mask.from_surface(self.image)
         if not self.size == self.post_size or not self.post_angle == (sum_mv):
             self.dictionary(tuple(sum_mv))
         self.post_size = self.size
-        screen.blit(self.img, self.rct)
+        screen.blit(self.image, self.rect)
 
 
 class Bomb:
@@ -173,11 +188,11 @@ class Bomb:
         引数1 color：爆弾円の色タプル
         引数2 rad：爆弾円の半径
         """
-        self.img = pg.Surface((2*rad, 2*rad))
-        pg.draw.circle(self.img, color, (rad, rad), rad)
-        self.img.set_colorkey((0, 0, 0))
-        self.rct = self.img.get_rect()
-        self.rct.center = random.randint(0, WIDTH), random.randint(0, HEIGHT)
+        self.image = pg.Surface((2*rad, 2*rad))
+        pg.draw.circle(self.image, color, (rad, rad), rad)
+        self.image.set_colorkey((0, 0, 0))
+        self.rect = self.image.get_rect()
+        self.rect.center = random.randint(0, WIDTH), random.randint(0, HEIGHT)
         self.vx, self.vy = +5, +5
 
     def update(self, screen: pg.Surface):
@@ -185,13 +200,36 @@ class Bomb:
         爆弾を速度ベクトルself.vx, self.vyに基づき移動させる
         引数 screen：画面Surface
         """
-        yoko, tate = check_bound(self.rct)
+        yoko, tate = check_bound(self.rect)
         if not yoko:
             self.vx *= -1
         if not tate:
             self.vy *= -1
-        self.rct.move_ip(self.vx, self.vy)
-        screen.blit(self.img, self.rct)
+        self.rect.move_ip(self.vx, self.vy)
+        screen.blit(self.image, self.rect)
+
+class Enemy(pg.sprite.Sprite):
+    """
+    敵バードに関するクラス
+    """
+    imgs = [pg.image.load(f"en_bird/bird{i}.png") for i in range(1, 9)]
+    start_move_lst = [[0, +6], [WIDTH, -6]] # 初期位置と移動速度をまとめたリスト
+    def __init__(self):
+        super().__init__()
+        start_move_idx = random.randint(0, 1) # start_move_lstのインデックスを決める変数(どちらからスタートし、どちらに動くか決める)
+        self.size = random.randint(1, 8) # 鳥の大きさを決める変数
+        self.image = pg.transform.rotozoom(__class__.imgs[self.size-1], 0, 0.1*self.size)
+        if start_move_idx == 0: # スタート位置が左端のとき画像を反転させる
+            self.image = pg.transform.flip(self.image, True, False)
+        self.mask = pg.mask.from_surface(self.image) # 透明な部分を無視するsurface「mask」を追加、当たり判定にはこれを使う
+        self.rect = self.mask.get_rect()
+        self.rect.center = __class__.start_move_lst[start_move_idx][0], random.randint(0, HEIGHT) # 初期位置
+        self.vx = __class__.start_move_lst[start_move_idx][1] # どちらに動くかをきめる変数
+
+    def update(self):
+        self.rect.move_ip(self.vx, 0)
+        if (self.vx > 0 and self.rect.center[0] > WIDTH) or (self.vx < 0 and self.rect.center[0] < 0): # 初期位置でない画面端に到達したら削除
+                self.kill()
 
 
 class Score:
@@ -202,18 +240,32 @@ class Score:
         self.fonto = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 30)
         self.color = (0, 0, 255)
         self.score = 0
-        self.img = self.fonto.render(f"Score: {self.score}", True, self.color)
-        self.rect = self.img.get_rect()
+        self.image = self.fonto.render(f"Score: {self.score}", True, self.color)
+        self.rect = self.image.get_rect()
         self.rect.bottomleft = (100, HEIGHT - 50)
 
     def update(self, screen: pg.Surface):
         # スコアの文字列を更新
-        self.img = self.fonto.render(f"Score: {self.score}", True, self.color)
-        screen.blit(self.img, self.rect)
+        self.image = self.fonto.render(f"Score: {self.score}", True, self.color)
+        screen.blit(self.image, self.rect)
 
-
-
-
+def check_eat_or_ed(bird: Bird, en_birds: pg.sprite.Group):
+    """
+    こうかとんと敵バードが当たった時に値を返す関数
+    返り値:
+    こうかとんのsizeの方が大きい場合:1
+    敵のsizeの方が大きい場合:0
+    引数1 bird: birdクラスのこうかとん
+    引数2 en_birds Enemyクラスの敵バードを要素に持つ、Groupクラス
+    """
+    for en_bird in pg.sprite.spritecollide(bird, en_birds, False): # こうかとんと敵バードの当たり判定について
+            offset = (bird.rect.x - en_bird.rect.x, bird.rect.y - en_bird.rect.y)
+            if en_bird.mask.overlap(bird.mask, offset):
+                if bird.size < en_bird.size:
+                    return 0
+                else:
+                    return 1
+        
 def main():
     score = Score()
     pg.display.set_caption("たたかえ！こうかとん")
@@ -221,6 +273,9 @@ def main():
     bg_img = pg.image.load("fig/sora.jpg")
     bird = Bird((300, 200))
     bomb = Bomb((255, 0, 0), 10)
+    # bomb2 = Bomb((0, 0, 255), 20)   
+    bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)] 
+    en_birds = pg.sprite.Group()
     # bomb2 = Bomb((0, 0, 255), 20)
     bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)]
     clock = pg.time.Clock()
@@ -246,10 +301,17 @@ def main():
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
         # beam.update(screen)
-        bombs = [bomb for bomb in bombs if bomb is not None]  # Noneでないものリスト
-        for bomb in bombs:
-            bomb.update(screen)
+        #bombs = [bomb for bomb in bombs if bomb is not None]  # Noneでないものリスト
+        #for bomb in bombs:
+        #    bomb.update(screen)
         # bomb2.update(screen)
+        if tmr %100 == 0:
+            en_birds.add(Enemy())
+        for en_bird in en_birds:
+            en_bird.update()
+        check_eat_or_ed(bird, en_birds)
+
+        en_birds.draw(screen)
         score.update(screen)
         pg.display.update()
         tmr += 1
