@@ -322,6 +322,44 @@ class Enemy(pg.sprite.Sprite):
         if (self.vx > 0 and self.rect.center[0] > WIDTH) or (self.vx < 0 and self.rect.center[0] < 0): # 初期位置でない画面端に到達したら削除
                 self.kill()
 
+class Plane:
+    """
+    飛行機に関するクラス
+    """
+    plane3 = pg.transform.rotozoom(pg.image.load("fig/plane3.png"), 0, 0.5)
+    plane3_1 = pg.transform.flip(plane3, True, False)
+    images = [pg.transform.rotozoom(pg.image.load("fig/plane.png"), 0, 0.5),pg.transform.rotozoom(pg.image.load("fig/plane2.png"), 0, 0.5),plane3_1]
+    def __init__(self, bird: Bird):
+        self.plane = random.choice(self.images)
+        self.plane = pg.transform.flip(self.plane, False, False)
+        self.rct = self.plane.get_rect()
+        self.rct.center = (WIDTH, random.randint(0, HEIGHT)) 
+        self.vx, self.vy = -10, 0  # 左方向に移動する速度ベクトル
+        self.bird = bird
+
+    def update(self, screen: pg.Surface):
+        self.rct.move_ip(self.vx, self.vy)
+        screen.blit(self.plane, self.rct)
+
+class Plane:
+    """
+    飛行機に関するクラス
+    """
+    plane3 = pg.transform.rotozoom(pg.image.load("fig/plane3.png"), 0, 0.5)
+    plane3_1 = pg.transform.flip(plane3, True, False)
+    images = [pg.transform.rotozoom(pg.image.load("fig/plane.png"), 0, 0.5),pg.transform.rotozoom(pg.image.load("fig/plane2.png"), 0, 0.5),plane3_1]
+    def __init__(self, bird: Bird):
+        self.plane = random.choice(self.images)
+        self.plane = pg.transform.flip(self.plane, False, False)
+        self.rct = self.plane.get_rect()
+        self.rct.center = (WIDTH, random.randint(0, HEIGHT)) 
+        self.vx, self.vy = -10, 0  # 左方向に移動する速度ベクトル
+        self.bird = bird
+
+    def update(self, screen: pg.Surface):
+        self.rct.move_ip(self.vx, self.vy)
+        screen.blit(self.plane, self.rct)
+
 
 class Score:
     """
@@ -405,6 +443,9 @@ def main():
     en_birds = pg.sprite.Group()
     # bomb2 = Bomb((0, 0, 255), 20)
     bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)]
+    # bomb2 = Bomb((0, 0, 255), 20)   
+    planes = []  
+    bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)] 
     clock = pg.time.Clock()
     tmr = 0
     life = Life(bird, bombs) 
@@ -425,6 +466,10 @@ def main():
                 return
         screen.blit(bg_img, [0, 0])
 
+        if random.randint(0, 1000) < 1:  # 0.5%の確率で新しい飛行機を生成
+            planes.append(Plane(bird))
+        
+
         for bomb in bombs:
             if life.life <= 0:
                 "ゲームオーバー時に，こうかとん画像を切り替え，1秒間表示させる"
@@ -439,6 +484,8 @@ def main():
 
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
+        for plane in planes:
+            plane.update(screen)  
         # beam.update(screen)
         #bombs = [bomb for bomb in bombs if bomb is not None]  # Noneでないものリスト
         #for bomb in bombs:
