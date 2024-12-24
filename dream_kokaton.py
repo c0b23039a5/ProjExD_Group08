@@ -407,7 +407,6 @@ class Life:
                 print(f"Life decreased to: {self.life}")
                 self.bombs.remove(bomb)
                 break
-        # self.image = self.fonto.render(f"Score: {self.score}", True, self.color)
         screen.blit(self.image, self.rect)
 
 
@@ -422,11 +421,7 @@ def main():
     bg_image = pg.image.load("fig/sora.jpg")
     bird = Bird((300, 200))
     en_birds = pg.sprite.Group()
-    # bomb2 = Bomb((0, 0, 255), 20)
-    # bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)]
-    # bomb2 = Bomb((0, 0, 255), 20)
     planes = []
-    # bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)]
     clock = pg.time.Clock()
     tmr = 0
     life = Life(bird, en_birds)
@@ -456,20 +451,6 @@ def main():
             time.sleep(2)
             return
 
-
-        # for bomb in bombs:  # 仮 爆弾を魚だと仮定して
-        #     if bird.rect.colliderect(bomb.rect):
-        #     # if life.life <= 0:
-        #         # ゲームオーバー時に，こうかとん画像を切り替え，1秒間表示させる
-        #         # bird.change_image(8, screen)
-        #         # fonto = pg.font.Font(None, 80)
-        #         # txt = fonto.render("Game Over", True, (255, 0, 0))
-        #         # screen.blit(txt, [WIDTH//2-150, HEIGHT//2])
-        #         bird.big_bird(0.02)
-        #         # pg.display.update()
-        #         # time.sleep(1)
-        #         # return
-
         if life.life <= 0:
             # ゲームオーバー時に，こうかとん画像を切り替え，1秒間表示させる
             bird.change_image(8, screen)
@@ -484,11 +465,6 @@ def main():
         bird.update(key_lst, screen)
         for plane in planes:
             plane.update(screen)
-        # beam.update(screen)
-        #bombs = [bomb for bomb in bombs if bomb is not None]  # Noneでないものリスト
-        #for bomb in bombs:
-        #    bomb.update(screen)
-        # bomb2.update(screen)
         if tmr %100 == 0:
             en_birds.add(Enemy())
         for en_bird in en_birds:
