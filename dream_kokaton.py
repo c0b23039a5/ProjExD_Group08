@@ -2,6 +2,7 @@ import os
 import random
 import sys
 import time
+import math
 import pygame as pg
 
 
@@ -35,27 +36,80 @@ class Bird:
         pg.K_LEFT: (-5, 0),
         pg.K_RIGHT: (+5, 0),
     }
-    img0 = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9)
-    img = pg.transform.flip(img0, True, False)  # デフォルトのこうかとん（右向き）
-    imgs = {  # 0度から反時計回りに定義
-        (+5, 0): img,  # 右
-        (+5, -5): pg.transform.rotozoom(img, 45, 0.9),  # 右上
-        (0, -5): pg.transform.rotozoom(img, 90, 0.9),  # 上
-        (-5, -5): pg.transform.rotozoom(img0, -45, 0.9),  # 左上
-        (-5, 0): img0,  # 左
-        (-5, +5): pg.transform.rotozoom(img0, 45, 0.9),  # 左下
-        (0, +5): pg.transform.rotozoom(img, -90, 0.9),  # 下
-        (+5, +5): pg.transform.rotozoom(img, -45, 0.9),  # 右下
-    }
 
     def __init__(self, xy: tuple[int, int]):
         """
         こうかとん画像Surfaceを生成する
         引数 xy：こうかとん画像の初期位置座標タプル
         """
-        self.img = __class__.imgs[(+5, 0)]
-        self.rct: pg.Rect = self.img.get_rect()
-        self.rct.center = xy
+        self.size = 0.9  # こうかとんのサイズ
+        self.dictionary((+5, 0),xy)  # こうかとんが右に向く
+        self.post_size = self.size  # 過去のサイズを記録する
+        self.post_angle = (+5, 0)  # 過去のアングルを記録する
+
+    def big_bird(self, num:float):
+        """
+        オブジェクトを食ったらこうかとんがでかくなる
+        引数 num：こうかとんのサイズの増減量
+        """
+        if num < 0 and self.size < 0.5:  # こうかとんが小さくなりすぎてどこに居るのかが分からなくならないようにする
+            pass
+        elif min(WIDTH,HEIGHT) > self.size*self.rct.height/2:  # ウィンドウサイズより大きくならないようにする
+            self.size += num  # numの増減に合わせてこうかとんのサイズを定義する
+
+        if self.size < 0:  # こうかとんのサイズがマイナスにならないようにする
+            self.size = 0.5
+
+    def dictionary(self, mv_angle,xy=None):
+        """
+        こうかとんに関するパラメーター（回転、サイズ）の動的辞書
+        引数1 my_angle：こうかとんが移動している角度
+        引数2 xy：座標の指定（任意）
+        戻り値：こうかとんの状況(回転、サイズ、位置等)を適用したこうかとんの画像
+        """
+        imgs = self.update_img()
+        if mv_angle == (0,0):  # こうかとんが静止しているときにでもサイズを更新するようにする。
+            self.img = imgs[self.post_angle]
+            self.update_rect(imgs)
+        else:  # こうかとんが移動しているとき
+          self.img = imgs[mv_angle]
+          if xy:
+            self.rct: pg.Rect = self.img.get_rect()
+            self.rct.center = xy
+          else:
+            self.update_rect(imgs)
+          self.post_angle = mv_angle
+          return self.img
+
+    def update_img(self):
+        """
+        こうかとんのサイズを反映したこうかとんの回転辞書
+        引数なし
+        戻り値：こうかとんのサイズを反映したこうかとんの回転辞書
+        """
+        img0 = pg.image.load("fig/3.png")  # 左向き
+        img = pg.transform.flip(img0, True, False)  # デフォルトのこうかとん（右向き）
+        imgs = {  # 0度から反時計回りに定義
+            (+5, 0): pg.transform.rotozoom(img, 0, self.size),  # 右
+            (+5, -5): pg.transform.rotozoom(img, 45, self.size),  # 右上
+            (0, -5): pg.transform.rotozoom(img, 90, self.size),  # 上
+            (-5, -5): pg.transform.rotozoom(img0, -45, self.size),  # 左上
+            (-5, 0): pg.transform.rotozoom(img0, 0, self.size),  # 左
+            (-5, +5): pg.transform.rotozoom(img0, 45, self.size),  # 左下
+            (0, +5): pg.transform.rotozoom(img, -90, self.size),  # 下
+            (+5, +5): pg.transform.rotozoom(img, -45, self.size),  # 右下
+        }
+        return imgs
+
+    def update_rect(self,imgs):
+        """
+        こうかとんのサイズを大きくしたときあたり判定を更新する
+        引数 imgs: 画像を回転する辞書
+        """
+        cache_center = self.rct.center  # self.rctを代入するとself.rct.centerのデータが失われてしまうため
+        self.rct: pg.Rect = imgs[(+5,0)].get_rect()  # こうかとんの画像が斜めのときあたり判定が広くなるため、斜めではないときの画像のあたり判定に固定する。
+        self.rct.center = cache_center
+
 
     def change_img(self, num: int, screen: pg.Surface):
         """
@@ -63,7 +117,7 @@ class Bird:
         引数1 num：こうかとん画像ファイル名の番号
         引数2 screen：画面Surface
         """
-        self.img = pg.transform.rotozoom(pg.image.load(f"fig/{num}.png"), 0, 0.9)
+        self.img = pg.transform.rotozoom(pg.image.load(f"fig/{num}.png"), 0, self.size)
         screen.blit(self.img, self.rct)
 
     def update(self, key_lst: list[bool], screen: pg.Surface):
@@ -72,6 +126,7 @@ class Bird:
         引数1 key_lst：押下キーの真理値リスト
         引数2 screen：画面Surface
         """
+        imgs = self.update_img()
         sum_mv = [0, 0]
         for k, mv in __class__.delta.items():
             if key_lst[k]:
@@ -79,11 +134,33 @@ class Bird:
                 sum_mv[1] += mv[1]
         self.rct.move_ip(sum_mv)
         if check_bound(self.rct) != (True, True):
-            self.rct.move_ip(-sum_mv[0], -sum_mv[1])
-        if not (sum_mv[0] == 0 and sum_mv[1] == 0):
-            self.img = __class__.imgs[tuple(sum_mv)]
+            if (self.post_angle == (+5, -5) or  # 右上
+                self.post_angle == (-5, -5) or  # 左上
+                self.post_angle == (-5, +5) or  # 左下
+                self.post_angle == (+5, +5)):  # 右下
+                    # こうかとんが斜めの状態だとheightとwidthが斜めではないときよりも長くなるため
+                    if self.rct.top < imgs[(+5, -5)].get_rect().height/8:
+                        self.rct.top = 0 - imgs[(+5, -5)].get_rect().height/8  # 画面内に強制移動
+                    if HEIGHT - imgs[(+5, -5)].get_rect().height/8 < self.rct.bottom:
+                        self.rct.bottom = HEIGHT - imgs[(+5, -5)].get_rect().height/8  # 画面内に強制移動
+                    if self.rct.left < imgs[(+5, -5)].get_rect().width/8:
+                        self.rct.left = 0 - imgs[(+5, -5)].get_rect().width/8  # 画面内に強制移動
+                    if WIDTH - imgs[(+5, -5)].get_rect().width/8 < self.rct.right:
+                        self.rct.right = WIDTH - imgs[(+5, -5)].get_rect().width/8   # 画面内に強制移動
+            else:
+                if self.rct.top < 0:
+                    self.rct.top = 0  # 画面内に強制移動
+                if HEIGHT < self.rct.bottom:
+                    self.rct.bottom = HEIGHT  # 画面内に強制移動
+                if self.rct.left <0:
+                    self.rct.left = 0  # 画面内に強制移動
+                if WIDTH < self.rct.right:
+                    self.rct.right = WIDTH  # 画面内に強制移動
+
+        if not self.size == self.post_size or not self.post_angle == (sum_mv):
+            self.dictionary(tuple(sum_mv))
+        self.post_size = self.size
         screen.blit(self.img, self.rct)
-    
 
 
 class Bomb:
@@ -133,38 +210,39 @@ class Score:
         # スコアの文字列を更新
         self.img = self.fonto.render(f"Score: {self.score}", True, self.color)
         screen.blit(self.img, self.rect)
-        
+
 
 
 
 def main():
     score = Score()
     pg.display.set_caption("たたかえ！こうかとん")
-    screen = pg.display.set_mode((WIDTH, HEIGHT))    
+    screen = pg.display.set_mode((WIDTH, HEIGHT))
     bg_img = pg.image.load("fig/sora.jpg")
-    bird = Bird((300, 200)) 
+    bird = Bird((300, 200))
     bomb = Bomb((255, 0, 0), 10)
-    # bomb2 = Bomb((0, 0, 255), 20)   
-    bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)] 
+    # bomb2 = Bomb((0, 0, 255), 20)
+    bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)]
     clock = pg.time.Clock()
     tmr = 0
     while True:
         for event in pg.event.get():
             if event.type == pg.QUIT:
-                return         
+                return
         screen.blit(bg_img, [0, 0])
-        
-        for bomb in bombs:
+
+        for bomb in bombs:  # 仮 爆弾を魚だと仮定して
             if bird.rct.colliderect(bomb.rct):
                 # ゲームオーバー時に，こうかとん画像を切り替え，1秒間表示させる
-                bird.change_img(8, screen)
-                fonto = pg.font.Font(None, 80)
-                txt = fonto.render("Game Over", True, (255, 0, 0))
-                screen.blit(txt, [WIDTH//2-150, HEIGHT//2])
-                pg.display.update()
-                time.sleep(1)
-                return
-                    
+                # bird.change_img(8, screen)
+                # fonto = pg.font.Font(None, 80)
+                # txt = fonto.render("Game Over", True, (255, 0, 0))
+                # screen.blit(txt, [WIDTH//2-150, HEIGHT//2])
+                bird.big_bird(0.02)
+                # pg.display.update()
+                # time.sleep(1)
+                # return
+
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
         # beam.update(screen)
