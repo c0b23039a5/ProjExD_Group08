@@ -13,9 +13,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 def start_screen(screen: pg.Surface):
     """
     ゲームのスタート画面を表示し、ユーザーの入力を待つ
-    """
-
-    
+    """    
     # 背景画像やフォントの準備
     bg_img = pg.image.load("fig/sora.jpg")  # 背景画像
     kokaton_img = pg.image.load("fig/3.png")  # 背景画像
@@ -23,13 +21,10 @@ def start_screen(screen: pg.Surface):
     font_title = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 100)  # タイトル用フォント
     font_start = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 50)   # 説明用フォント
     font_rule = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 50)   # 説明用フォント
-
-
     # テキストの描画
     title_text = font_title.render("ゲームタイトル", True, (255, 255, 255))
     start_text = font_start.render("スタート", True, (2, 200, 0))
     rule_text = font_rule.render("遊び方", True, (2, 200, 0))
-
     while True:
         # 半透明なテキストSurfaceを作成
         start_surf = start_text.convert_alpha()
@@ -38,15 +33,12 @@ def start_screen(screen: pg.Surface):
         title_rect = title_text.get_rect(center=(WIDTH//2, HEIGHT//4))
         button_rect = start_text.get_rect(center=(WIDTH//3, (HEIGHT//5)*4))
         rule_rect = rule_text.get_rect(center=((WIDTH//3)*2, (HEIGHT//5)*4))
-
-
         screen.blit(bg_img, [0, 0])
         screen.blit(title_text, title_rect)  # タイトルを描画
         screen.blit(start_surf, button_rect)  # 説明文を描画
         screen.blit(rule_text, rule_rect)  # 説明文を描画
         screen.blit(kokaton_img, ((WIDTH//2)-100, (HEIGHT//2)-50)) #画像の描画
         pg.display.update() 
-
         # ユーザーの入力を待つ
         for event in pg.event.get():
             if event.type == pg.QUIT:
