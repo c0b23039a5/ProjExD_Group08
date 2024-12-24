@@ -134,12 +134,10 @@ class Bird(pg.sprite.Sprite):
         こうかとん画像Surfaceを生成する
         引数 xy：こうかとん画像の初期位置座標タプル
         """
-        self.size = 1
+        self.size = 2
         self.post_size = self.size  # 過去のサイズを記録する
         self.post_angle = (+5, 0)  # 過去のアングルを記録する
         self.dictionary((+5, 0),xy)
-        self.mask = pg.mask.from_surface(self.image)  # 透明な部分を無視するsurface「mask」を追加、当たり判定はこれを用いて行う
-        self.rect: pg.Rect = self.image.get_rect()
 
 
     def change_image(self, num: int, screen: pg.Surface):
@@ -176,15 +174,14 @@ class Bird(pg.sprite.Sprite):
         imgs = self.update_image()
         if mv_angle == (0,0):  # こうかとんが静止しているときにでもサイズを更新するようにする。
             self.image = imgs[self.post_angle]
-            self.update_rect(imgs)
+            self.mask = pg.mask.from_surface(imgs[(+5,0)])  # 透明な部分を無視するsurface「mask」を追加、当たり判定はこれを用いて行う
         else:  # こうかとんが移動しているとき
             self.image = imgs[mv_angle]
             if xy:
                 self.rect: pg.Rect = self.image.get_rect()
                 self.rect.center = xy
-            else:
-                self.update_rect(imgs)
-            self.post_angle = mv_angle
+                self.post_angle = mv_angle
+                self.mask = pg.mask.from_surface(imgs[(+5,0)])  # 透明な部分を無視するsurface「mask」を追加、当たり判定はこれを用いて行う
             return self.image
 
     def update_image(self):
@@ -206,15 +203,6 @@ class Bird(pg.sprite.Sprite):
             (+5, +5): pg.transform.rotozoom(image, -45, self.size),  # 右下
         }
         return imgs
-
-    def update_rect(self,imgs):
-        """
-        こうかとんのサイズを大きくしたときあたり判定を更新する
-        引数 imgs: 画像を回転する辞書
-        """
-        cache_center = self.rect.center  # self.rectを代入するとself.rect.centerのデータが失われてしまうため
-        self.rect: pg.Rect = imgs[(+5,0)].get_rect()  # こうかとんの画像が斜めのときあたり判定が広くなるため、斜めではないときの画像のあたり判定に固定する。
-        self.rect.center = cache_center
 
     def update(self, key_lst: list[bool], screen: pg.Surface):
         """
