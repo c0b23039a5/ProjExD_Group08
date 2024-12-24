@@ -50,7 +50,7 @@ class Bird:
     def big_bird(self, num:float):
         """
         オブジェクトを食ったらこうかとんがでかくなる
-        引数1 num：こうかとんのサイズの増減量
+        引数 num：こうかとんのサイズの増減量
         """
         if num < 0 and self.size < 0.5:  # こうかとんが小さくなりすぎてどこに居るのかが分からなくならないようにする
             pass
@@ -81,6 +81,10 @@ class Bird:
           return self.img
 
     def update_img(self):
+        """
+        こうかとんのサイズを大きさを反映した動的辞書
+        引数なし
+        """
         img0 = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, self.size)  # 左向き
         img = pg.transform.flip(img0, True, False)  # デフォルトのこうかとん（右向き）
         imgs = {  # 0度から反時計回りに定義
@@ -95,7 +99,7 @@ class Bird:
         }
         return imgs
 
-    def update_rect(self,imgs,mv_angle):
+    def update_rect(self,imgs):
         """
         こうかとんのサイズを大きくしたときあたり判定も更新するようにする
         引数 imgs: 画像を回転する辞書
