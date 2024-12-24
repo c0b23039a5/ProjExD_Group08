@@ -126,13 +126,14 @@ class Bird(pg.sprite.Sprite):
         self.mask = pg.mask.from_surface(self.image) # 透明な部分を無視するsurface「mask」を追加、当たり判定はこれを用いて行う
         self.rect: pg.Rect = self.image.get_rect()
 
+
     def change_image(self, num: int, screen: pg.Surface):
         """
         こうかとん画像を切り替え，画面に転送する
         引数1 num：こうかとん画像ファイル名の番号
         引数2 screen：画面Surface
         """
-        self.image = pg.transform.rotozoom(pg.image.load(f"fig/{num}.png"), 0, 0.9)
+        self.image = pg.transform.rotozoom(pg.image.load(f"fig/{num}.png"), 0, self.size)
         self.mask = pg.mask.from_surface(self.image)
         screen.blit(self.image, self.rect)
 
@@ -199,16 +200,6 @@ class Bird(pg.sprite.Sprite):
         cache_center = self.rect.center  # self.rectを代入するとself.rect.centerのデータが失われてしまうため
         self.rect: pg.Rect = imgs[(+5,0)].get_rect()  # こうかとんの画像が斜めのときあたり判定が広くなるため、斜めではないときの画像のあたり判定に固定する。
         self.rect.center = cache_center
-
-
-    def change_image(self, num: int, screen: pg.Surface):
-        """
-        こうかとん画像を切り替え，画面に転送する
-        引数1 num：こうかとん画像ファイル名の番号
-        引数2 screen：画面Surface
-        """
-        self.image = pg.transform.rotozoom(pg.image.load(f"fig/{num}.png"), 0, self.size)
-        screen.blit(self.image, self.rect)
 
     def update(self, key_lst: list[bool], screen: pg.Surface):
         """
