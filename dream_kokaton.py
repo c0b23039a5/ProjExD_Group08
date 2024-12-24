@@ -399,7 +399,7 @@ class Life:
         self.image = self.fonto.render(f"Life: {self.life}", True, self.color)
         screen.blit(self.image, self.rect)
 
-    def life_decrease(self):
+    def life_decrease(self,screen: pg.Surface):
         for bomb in self.bombs:
             if self.bird.rect.colliderect(bomb.rect):
                 print("Collision detected!")  # デバッグ用プリント
@@ -407,7 +407,7 @@ class Life:
                 print(f"Life decreased to: {self.life}")
                 self.bombs.remove(bomb)
                 break
-        self.image = self.fonto.render(f"Score: {self.score}", True, self.color)
+        # self.image = self.fonto.render(f"Score: {self.score}", True, self.color)
         screen.blit(self.image, self.rect)
 
 def check_eat_or_ed(bird: Bird, en_birds: pg.sprite.Group):
@@ -426,7 +426,7 @@ def check_eat_or_ed(bird: Bird, en_birds: pg.sprite.Group):
                     return 0
                 else:
                     return 1
-        
+
 def main():
     pg.mixer.music.load("sound/_Albatross.mp3")  #音声ファイルの読み込み
     pg.mixer.music.play(-1)  #音声を再生（無限ループ）
@@ -439,10 +439,10 @@ def main():
     bird = Bird((300, 200))
     en_birds = pg.sprite.Group()
     # bomb2 = Bomb((0, 0, 255), 20)
-    bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)]
-    # bomb2 = Bomb((0, 0, 255), 20)   
-    planes = []  
-    bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)] 
+    # bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)]
+    # bomb2 = Bomb((0, 0, 255), 20)
+    planes = []
+    # bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)]
     clock = pg.time.Clock()
     tmr = 0
     life = Life(bird, en_birds)
@@ -489,7 +489,7 @@ def main():
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
         for plane in planes:
-            plane.update(screen)  
+            plane.update(screen)
         # beam.update(screen)
         #bombs = [bomb for bomb in bombs if bomb is not None]  # Noneでないものリスト
         #for bomb in bombs:
@@ -503,7 +503,7 @@ def main():
         if check_eat_or_ed(bird, en_birds):
             bird.big_bird(0.06)
         else:
-            life.life_decrease()
+            life.life_decrease(screen)
 
 
         en_birds.draw(screen)
