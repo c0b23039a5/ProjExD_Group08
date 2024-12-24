@@ -437,7 +437,6 @@ def main():
             time.sleep(2)
             return
 
-        screen.blit(bg_image, [0, 0])
 
         # for bomb in bombs:  # 仮 爆弾を魚だと仮定して
         #     if bird.rect.colliderect(bomb.rect):
