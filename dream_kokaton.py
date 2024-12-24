@@ -304,7 +304,34 @@ class Enemy(pg.sprite.Sprite):
                 self.kill()
 
 
-class Score:
+class Timer:
+    """
+    カウントダウンタイマーのクラス
+    """
+    def __init__(self, total_seconds: int):
+        self.total_seconds = total_seconds
+        self.start_ticks = pg.time.get_ticks()  # タイマー開始時のticksを記録
+        self.font = pg.font.Font(None, 80)
+        self.color = (255, 255, 255)
+
+    def update(self, screen: pg.Surface):
+        """
+        タイマーを更新し、画面に分:秒形式で表示する
+        """
+        elapsed_ticks = (pg.time.get_ticks() - self.start_ticks) // 1000  # 経過秒数
+        remaining_time = max(self.total_seconds - elapsed_ticks, 0)  # 残り秒数（0以下にならない）
+        minutes = remaining_time // 60
+        seconds = remaining_time % 60
+
+        # タイマー表示
+        timer_text = f"{minutes:02}:{seconds:02}"  # 分:秒形式
+        img = self.font.render(timer_text, True, self.color)
+        screen.blit(img, (WIDTH - 200, 50))  # 画面右上に表示
+
+        return remaining_time  # 残り時間を返す
+
+
+class Score: #オブジェクトとの衝突判定ができたらスコアが増加するようにする
     """
     スコアに関するクラス
     """
@@ -315,6 +342,9 @@ class Score:
         self.image = self.fonto.render(f"Score: {self.score}", True, self.color)
         self.rect = self.image.get_rect()
         self.rect.bottomleft = (100, HEIGHT - 50)
+
+    def score_up(self):
+        self.score += 1
 
     def update(self, screen: pg.Surface):
         # スコアの文字列を更新
@@ -395,8 +425,18 @@ def main():
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 return
-        screen.blit(bg_image, [0, 0])
+        screen.blit(bg_img, [0, 0])
+         # タイマーの更新と終了判定
+        remaining_time = timer.update(screen)
+        if remaining_time == 0:
+            fonto = pg.font.Font(None, 80)
+            txt = fonto.render("Time Up!", True, (255, 0, 0))
+            screen.blit(txt, [WIDTH//2-150, HEIGHT//2])
+            pg.display.update()
+            time.sleep(2)
+            return
 
+        screen.blit(bg_image, [0, 0])
 
         # for bomb in bombs:  # 仮 爆弾を魚だと仮定して
         #     if bird.rect.colliderect(bomb.rect):
@@ -433,7 +473,6 @@ def main():
         score.update(screen)
         life.update(screen)
         pg.display.update()
-        tmr += 1
         clock.tick(50)
 
 
