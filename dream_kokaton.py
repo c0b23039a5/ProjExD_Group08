@@ -403,6 +403,7 @@ def main():
     screen_scene = 0
     screen = pg.display.set_mode((WIDTH, HEIGHT))
     score = Score()
+    timer = Timer(30)
     pg.display.set_caption("たたかえ！こうかとん")
     bg_image = pg.image.load("fig/sora.jpg")
     bird = Bird((300, 200))
@@ -425,7 +426,7 @@ def main():
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 return
-        screen.blit(bg_img, [0, 0])
+        screen.blit(bg_image, [0, 0])
          # タイマーの更新と終了判定
         remaining_time = timer.update(screen)
         if remaining_time == 0:
@@ -473,6 +474,7 @@ def main():
         score.update(screen)
         life.update(screen)
         pg.display.update()
+        tmr += 1
         clock.tick(50)
 
 
