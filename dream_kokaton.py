@@ -115,6 +115,18 @@ class Bird(pg.sprite.Sprite):
         pg.K_LEFT: (-5, 0),
         pg.K_RIGHT: (+5, 0),
     }
+    img0 = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9)
+    img = pg.transform.flip(img0, True, False)  # デフォルトのこうかとん（右向き）
+    imgs = {  # 0度から反時計回りに定義
+        (+5, 0): img,  # 右
+        (+5, -5): pg.transform.rotozoom(img, 45, 0.9),  # 右上
+        (0, -5): pg.transform.rotozoom(img, 90, 0.9),  # 上
+        (-5, -5): pg.transform.rotozoom(img0, -45, 0.9),  # 左上
+        (-5, 0): img0,  # 左
+        (-5, +5): pg.transform.rotozoom(img0, 45, 0.9),  # 左下
+        (0, +5): pg.transform.rotozoom(img, -90, 0.9),  # 下
+        (+5, +5): pg.transform.rotozoom(img, -45, 0.9),  # 右下
+    }
 
     def __init__(self, xy: tuple[int, int]):
         """
@@ -325,27 +337,6 @@ class Score:
 
     def update(self, screen: pg.Surface):
         # スコアの文字列を更新
-<<<<<<< HEAD
-        self.image = self.fonto.render(f"Score: {self.score}", True, self.color)
-        screen.blit(self.image, self.rect)
-
-def check_eat_or_ed(bird: Bird, en_birds: pg.sprite.Group):
-    """
-    こうかとんと敵バードが当たった時に値を返す関数
-    返り値:
-    こうかとんのsizeの方が大きい場合:1
-    敵のsizeの方が大きい場合:0
-    引数1 bird: birdクラスのこうかとん
-    引数2 en_birds Enemyクラスの敵バードを要素に持つ、Groupクラス
-    """
-    for en_bird in pg.sprite.spritecollide(bird, en_birds, False): # こうかとんと敵バードの当たり判定について
-            offset = (bird.rect.x - en_bird.rect.x, bird.rect.y - en_bird.rect.y)
-            if en_bird.mask.overlap(bird.mask, offset):
-                if bird.size < en_bird.size:
-                    return 0
-                else:
-                    return 1
-=======
         self.img = self.fonto.render(f"Score: {self.score}", True, self.color)
         screen.blit(self.img, self.rect)
 
@@ -377,7 +368,25 @@ class Life:
                 print(f"Life decreased to: {self.life}")  
                 self.bombs.remove(bomb)
                 break
->>>>>>> C0B23011/gameover
+        self.image = self.fonto.render(f"Score: {self.score}", True, self.color)
+        screen.blit(self.image, self.rect)
+
+def check_eat_or_ed(bird: Bird, en_birds: pg.sprite.Group):
+    """
+    こうかとんと敵バードが当たった時に値を返す関数
+    返り値:
+    こうかとんのsizeの方が大きい場合:1
+    敵のsizeの方が大きい場合:0
+    引数1 bird: birdクラスのこうかとん
+    引数2 en_birds Enemyクラスの敵バードを要素に持つ、Groupクラス
+    """
+    for en_bird in pg.sprite.spritecollide(bird, en_birds, False): # こうかとんと敵バードの当たり判定について
+            offset = (bird.rect.x - en_bird.rect.x, bird.rect.y - en_bird.rect.y)
+            if en_bird.mask.overlap(bird.mask, offset):
+                if bird.size < en_bird.size:
+                    return 0
+                else:
+                    return 1
         
 def main():
     pg.mixer.music.load("sound/_Albatross.mp3") #音声ファイルの読み込み
@@ -415,24 +424,18 @@ def main():
             if event.type == pg.QUIT:
                 return
         screen.blit(bg_img, [0, 0])
-<<<<<<< HEAD
 
-        for bomb in bombs:  # 仮 爆弾を魚だと仮定して
-            if bird.rct.colliderect(bomb.rct):
-=======
-        
         for bomb in bombs:
             if life.life <= 0:
->>>>>>> C0B23011/gameover
-                # ゲームオーバー時に，こうかとん画像を切り替え，1秒間表示させる
-                # bird.change_img(8, screen)
-                # fonto = pg.font.Font(None, 80)
-                # txt = fonto.render("Game Over", True, (255, 0, 0))
-                # screen.blit(txt, [WIDTH//2-150, HEIGHT//2])
+                "ゲームオーバー時に，こうかとん画像を切り替え，1秒間表示させる"
+                bird.change_img(8, screen)
+                fonto = pg.font.Font(None, 80)
+                txt = fonto.render("Game Over", True, (255, 0, 0))
+                screen.blit(txt, [WIDTH//2-150, HEIGHT//2])
                 bird.big_bird(0.02)
-                # pg.display.update()
-                # time.sleep(1)
-                # return
+                pg.display.update()
+                time.sleep(1)
+                return
 
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
