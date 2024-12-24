@@ -120,9 +120,12 @@ class Plane:
     """
     飛行機に関するクラス
     """
-    plane = pg.transform.rotozoom(pg.image.load("fig/plane.png"), 0, 0.5)
-    plane1 = pg.transform.flip(plane, True, False)  # デフォルトのこうかとん（右向き）
+    plane3 = pg.transform.rotozoom(pg.image.load("fig/plane3.png"), 0, 0.5)
+    plane3_1 = pg.transform.flip(plane3, True, False)
+    images = [pg.transform.rotozoom(pg.image.load("fig/plane.png"), 0, 0.5),pg.transform.rotozoom(pg.image.load("fig/plane2.png"), 0, 0.5),plane3_1]
     def __init__(self, bird: Bird):
+        self.plane = random.choice(self.images)
+        self.plane = pg.transform.flip(self.plane, False, False)
         self.rct = self.plane.get_rect()
         self.rct.center = (WIDTH, random.randint(0, HEIGHT)) 
         self.vx, self.vy = -10, 0  # 左方向に移動する速度ベクトル
