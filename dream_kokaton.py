@@ -18,29 +18,35 @@ def start_screen(screen: pg.Surface):
     """
     # 背景画像やフォントの準備
     bg_image = pg.image.load("fig/sora.jpg")  # 背景画像
-    kokaton_image = pg.image.load("fig/3.png")  # 背景画像
+    kokaton_image = pg.image.load("fig/koukoton.png")  # 背景画像
     kokaton_image = pg.transform.scale(kokaton_image,(158, 168))
     font_title = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 100)  # タイトル用フォント
     font_start = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 50)   # 説明用フォント
     font_rule = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 50)   # 説明用フォント
+
+
     # テキストの描画
     title_text = font_title.render("ドリームバード", True, (255, 255, 255))
-    start_text = font_start.render("スタート", True, (2, 200, 0))
-    rule_text = font_rule.render("遊び方", True, (2, 200, 0))
+    start_text = font_start.render("スタート", True, (255, 255, 255))
+    rule_text = font_rule.render("遊び方", True, (255, 255, 255))
+   
     while True:
-        # 半透明なテキストSurfaceを作成
-        start_surf = start_text.convert_alpha()
-        start_surf.set_alpha(200)  # 透明度設定：0（完全透明）～ 255（不透明）
-        # テキストの位置調整
         title_rect = title_text.get_rect(center=(WIDTH//2, HEIGHT//4))
         button_rect = start_text.get_rect(center=(WIDTH//3, (HEIGHT//5)*4))
         rule_rect = rule_text.get_rect(center=((WIDTH//3)*2, (HEIGHT//5)*4))
-        screen.blit(bg_image, [0, 0])
+        
+        screen.blit(bg_img, [0, 0])
+        
+        pg.draw.rect(screen, (142, 206, 254), button_rect.inflate(20, 20), border_radius=10)  # スタートボタン背景
+        pg.draw.rect(screen, (142, 206, 254), rule_rect.inflate(20, 20), border_radius=10)   # 遊び方ボタン背景
+      
+      
         screen.blit(title_text, title_rect)  # タイトルを描画
-        screen.blit(start_surf, button_rect)  # 説明文を描画
+        screen.blit(start_text, button_rect)  # 説明文を描画
         screen.blit(rule_text, rule_rect)  # 説明文を描画
         screen.blit(kokaton_image, ((WIDTH//2)-100, (HEIGHT//2)-50))  #画像の描画
         pg.display.update()
+        
         # ユーザーの入力を待つ
         for event in pg.event.get():
             if event.type == pg.QUIT:
@@ -59,18 +65,37 @@ def Howto_screen(screen: pg.Surface):
     引数 screen：画面Surface
     戻り値 ルール画面終了 "play"
     """
-    # pg.mixer.music.load("sound/_Albatross.mp3")  #音声ファイルの読み込み
-    # pg.mixer.music.play(-1)  #音声を再生（無限ループ）
+    # pg.mixer.music.load("sound/_Albatross.mp3") #音声ファイルの読み込み
+    # pg.mixer.music.play(-1) #音声を再生（無限ループ）
+
+
+
+    font = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 30)  # 日本語フォントを指定
+    # 色の設定
+    WHITE = (255, 255, 255)
+    BLACK = (0, 0, 0)
+    BROWN = (160, 82, 45)
+    GREEN = (0, 255, 0)
+    BUTTON_COLOR = (200, 50, 50)
+
+    # テキスト内容
+    instructions = (
+        "<遊び方>\n"
+        "1. 矢印キーでこうかとんを上下左右に動かし、\n   自分よりも小さな鳥を食べると体が大きくなります。\n"
+        "2. 自分より小さな魚を食べると得点となり、\n   自分よりも大きな魚にぶつかるとLIFEは減ります。\n"
+        "3. たまに出現する飛行機にあたったり\n"
+        "　 LIFEが全てなくなるか制限時間が終わるとゲームオーバーです。"
+    )
 
     # 背景画像やフォントの準備
     bg_image = pg.image.load("fig/sora.jpg")  # 背景画像
-    Howto_title = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 100)  # タイトル用フォント
-    font_return = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 50)   # 説明用フォント
-
+    Howto_title = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 40)  # タイトル用フォント
+    font_return = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 40)   # 説明用フォント
+    
     # テキストの描画
-    Howto_text = Howto_title.render("遊び方を書くページだよ", True, (255, 255, 255))
-    font_return = font_return.render("戻る", True, (2, 200, 0))
-
+    Howto_text = Howto_title.render("遊び方", True, WHITE)
+    font_return = font_return.render("<閉じる>", True, BLACK)
+   
     while True:
         # 半透明なテキストSurfaceを作成
         Howto_surf = Howto_text.convert_alpha()
@@ -78,9 +103,15 @@ def Howto_screen(screen: pg.Surface):
         # テキストの位置調整
         title_rect = Howto_text.get_rect(center=(WIDTH//2, HEIGHT//4))
         return_rect = font_return.get_rect(center=(WIDTH//2, (HEIGHT//4)*3))
+
         screen.blit(bg_image, [0, 0])
-        screen.blit(Howto_text, title_rect)  # タイトルを描画
+#         screen.blit(Howto_text, title_rect)  # タイトルを描画
         screen.blit(font_return, return_rect)  # 戻るボタンを描画
+
+        instruction_lines = instructions.split("\n")
+        for i, line in enumerate(instruction_lines):
+            line_surface = font.render(line, True, BLACK)
+            screen.blit(line_surface, (100, 150 + i * 40))
         pg.display.update()
 
         for event in pg.event.get():
