@@ -156,6 +156,9 @@ class Score: #オブジェクトとの衝突判定ができたらスコアが増
         self.rect = self.img.get_rect()
         self.rect.bottomleft = (100, HEIGHT - 50)
 
+    def score_up(self):
+        self.score += 1
+
     def update(self, screen: pg.Surface):
         # スコアの文字列を更新
         self.img = self.fonto.render(f"Score: {self.score}", True, self.color)
