@@ -14,6 +14,8 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 def start_screen(screen: pg.Surface):
     """
     ゲームのスタート画面を表示し、ユーザーの入力を待つ
+    引数 screen：画面Surface
+    戻り値 スタート画面終了 "play" / ルール画面 null
     """
     # 背景画像やフォントの準備
     bg_image = pg.image.load("fig/sora.jpg")  # 背景画像
@@ -38,7 +40,7 @@ def start_screen(screen: pg.Surface):
         screen.blit(title_text, title_rect)  # タイトルを描画
         screen.blit(start_surf, button_rect)  # 説明文を描画
         screen.blit(rule_text, rule_rect)  # 説明文を描画
-        screen.blit(kokaton_image, ((WIDTH//2)-100, (HEIGHT//2)-50)) #画像の描画
+        screen.blit(kokaton_image, ((WIDTH//2)-100, (HEIGHT//2)-50))  #画像の描画
         pg.display.update()
         # ユーザーの入力を待つ
         for event in pg.event.get():
@@ -55,9 +57,11 @@ def start_screen(screen: pg.Surface):
 def Howto_screen(screen: pg.Surface):
     """
     ゲームの遊び方の画面を表示し、ユーザーの入力を待つ
+    引数 screen：画面Surface
+    戻り値 ルール画面終了 "play"
     """
-    # pg.mixer.music.load("sound/_Albatross.mp3") #音声ファイルの読み込み
-    # pg.mixer.music.play(-1) #音声を再生（無限ループ）
+    # pg.mixer.music.load("sound/_Albatross.mp3")  #音声ファイルの読み込み
+    # pg.mixer.music.play(-1)  #音声を再生（無限ループ）
 
     # 背景画像やフォントの準備
     bg_image = pg.image.load("fig/sora.jpg")  # 背景画像
@@ -123,7 +127,7 @@ class Bird(pg.sprite.Sprite):
         self.post_size = self.size  # 過去のサイズを記録する
         self.post_angle = (+5, 0)  # 過去のアングルを記録する
         self.dictionary((+5, 0),xy)
-        self.mask = pg.mask.from_surface(self.image) # 透明な部分を無視するsurface「mask」を追加、当たり判定はこれを用いて行う
+        self.mask = pg.mask.from_surface(self.image)  # 透明な部分を無視するsurface「mask」を追加、当たり判定はこれを用いて行う
         self.rect: pg.Rect = self.image.get_rect()
 
 
@@ -163,14 +167,14 @@ class Bird(pg.sprite.Sprite):
             self.image = imgs[self.post_angle]
             self.update_rect(imgs)
         else:  # こうかとんが移動しているとき
-          self.image = imgs[mv_angle]
-          if xy:
-            self.rect: pg.Rect = self.image.get_rect()
-            self.rect.center = xy
-          else:
-            self.update_rect(imgs)
-          self.post_angle = mv_angle
-          return self.image
+            self.image = imgs[mv_angle]
+            if xy:
+                self.rect: pg.Rect = self.image.get_rect()
+                self.rect.center = xy
+            else:
+                self.update_rect(imgs)
+            self.post_angle = mv_angle
+            return self.image
 
     def update_image(self):
         """
@@ -227,7 +231,7 @@ class Bird(pg.sprite.Sprite):
                     if self.rect.left < imgs[(+5, -5)].get_rect().width/8:
                         self.rect.left = 0 - imgs[(+5, -5)].get_rect().width/8  # 画面内に強制移動
                     if WIDTH - imgs[(+5, -5)].get_rect().width/8 < self.rect.right:
-                        self.rect.right = WIDTH - imgs[(+5, -5)].get_rect().width/8   # 画面内に強制移動
+                        self.rect.right = WIDTH - imgs[(+5, -5)].get_rect().width/8  # 画面内に強制移動
             else:
                 if self.rect.top < 0:
                     self.rect.top = 0  # 画面内に強制移動
@@ -276,27 +280,28 @@ class Bomb:
         self.rect.move_ip(self.vx, self.vy)
         screen.blit(self.image, self.rect)
 
+
 class Enemy(pg.sprite.Sprite):
     """
     敵バードに関するクラス
     """
     imgs = [pg.image.load(f"en_bird/bird{i}.png") for i in range(1, 9)]
-    start_move_lst = [[0, +6], [WIDTH, -6]] # 初期位置と移動速度をまとめたリスト
+    start_move_lst = [[0, +6], [WIDTH, -6]]  # 初期位置と移動速度をまとめたリスト
     def __init__(self):
         super().__init__()
-        start_move_idx = random.randint(0, 1) # start_move_lstのインデックスを決める変数(どちらからスタートし、どちらに動くか決める)
-        self.size = random.randint(1, 8) # 鳥の大きさを決める変数
+        start_move_idx = random.randint(0, 1)  # start_move_lstのインデックスを決める変数(どちらからスタートし、どちらに動くか決める)
+        self.size = random.randint(1, 8)  # 鳥の大きさを決める変数
         self.image = pg.transform.rotozoom(__class__.imgs[self.size-1], 0, 0.1*self.size)
-        if start_move_idx == 0: # スタート位置が左端のとき画像を反転させる
+        if start_move_idx == 0:  # スタート位置が左端のとき画像を反転させる
             self.image = pg.transform.flip(self.image, True, False)
-        self.mask = pg.mask.from_surface(self.image) # 透明な部分を無視するsurface「mask」を追加、当たり判定にはこれを使う
+        self.mask = pg.mask.from_surface(self.image)  # 透明な部分を無視するsurface「mask」を追加、当たり判定にはこれを使う
         self.rect = self.mask.get_rect()
-        self.rect.center = __class__.start_move_lst[start_move_idx][0], random.randint(0, HEIGHT) # 初期位置
-        self.vx = __class__.start_move_lst[start_move_idx][1] # どちらに動くかをきめる変数
+        self.rect.center = __class__.start_move_lst[start_move_idx][0], random.randint(0, HEIGHT)  # 初期位置
+        self.vx = __class__.start_move_lst[start_move_idx][1]  # どちらに動くかをきめる変数
 
     def update(self):
         self.rect.move_ip(self.vx, 0)
-        if (self.vx > 0 and self.rect.center[0] > WIDTH) or (self.vx < 0 and self.rect.center[0] < 0): # 初期位置でない画面端に到達したら削除
+        if (self.vx > 0 and self.rect.center[0] > WIDTH) or (self.vx < 0 and self.rect.center[0] < 0):  # 初期位置でない画面端に到達したら削除
                 self.kill()
 
 
@@ -320,19 +325,18 @@ class Score:
 def check_eat_or_ed(bird: Bird, en_birds: pg.sprite.Group):
     """
     こうかとんと敵バードが当たった時に値を返す関数
-    返り値:
-    こうかとんのsizeの方が大きい場合:1
-    敵のsizeの方が大きい場合:0
     引数1 bird: birdクラスのこうかとん
     引数2 en_birds Enemyクラスの敵バードを要素に持つ、Groupクラス
+    返り値 こうかとんのsizeの方が大きい場合:1 ／ 敵のsizeの方が大きい場合:0
     """
-    for en_bird in pg.sprite.spritecollide(bird, en_birds, False): # こうかとんと敵バードの当たり判定について
+    for en_bird in pg.sprite.spritecollide(bird, en_birds, False):  # こうかとんと敵バードの当たり判定について
             offset = (bird.rect.x - en_bird.rect.x, bird.rect.y - en_bird.rect.y)
             if en_bird.mask.overlap(bird.mask, offset):
                 if bird.size < en_bird.size:
                     return 0
                 else:
                     return 1
+
 
 class Life:
     """
@@ -363,23 +367,20 @@ class Life:
                 self.bombs.remove(bomb)
                 break
 
+
 def main():
-    pg.mixer.music.load("sound/_Albatross.mp3") #音声ファイルの読み込み
-    pg.mixer.music.play(-1) #音声を再生（無限ループ）
+    pg.mixer.music.load("sound/_Albatross.mp3")  #音声ファイルの読み込み
+    pg.mixer.music.play(-1)  #音声を再生（無限ループ）
     screen_scene = 0
-    pg.display.set_caption("ゲームタイトル")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
     score = Score()
     pg.display.set_caption("たたかえ！こうかとん")
-    screen = pg.display.set_mode((WIDTH, HEIGHT))
     bg_image = pg.image.load("fig/sora.jpg")
     bird = Bird((300, 200))
     bomb = Bomb((255, 0, 0), 10)
     # bomb2 = Bomb((0, 0, 255), 20)
     bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)]
     en_birds = pg.sprite.Group()
-    # bomb2 = Bomb((0, 0, 255), 20)
-    bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)]
     clock = pg.time.Clock()
     tmr = 0
     life = Life(bird, bombs)
@@ -391,7 +392,7 @@ def main():
                 screen_scene = 2
                 continue
         elif screen_scene == 2:
-            Howto_screen(screen) #遊び方関数
+            Howto_screen(screen)  #遊び方関数
             screen_scene = 0
             continue
 
