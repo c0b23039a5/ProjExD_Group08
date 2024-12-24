@@ -311,7 +311,7 @@ class Timer:
         self.total_seconds = total_seconds
         self.start_ticks = pg.time.get_ticks()  # タイマー開始時のticksを記録
         self.font = pg.font.Font(None, 80)
-        self.color = (255, 255, 255)
+        self.color = (0, 0, 0)
 
     def update(self, screen: pg.Surface):
         """
