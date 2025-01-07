@@ -40,7 +40,6 @@ def start_screen(screen: pg.Surface):
         pg.draw.rect(screen, (142, 206, 254), button_rect.inflate(20, 20), border_radius=10)  # スタートボタン背景
         pg.draw.rect(screen, (142, 206, 254), rule_rect.inflate(20, 20), border_radius=10)   # 遊び方ボタン背景
 
-
         screen.blit(title_text, title_rect)  # タイトルを描画
         screen.blit(start_text, button_rect)  # 説明文を描画
         screen.blit(rule_text, rule_rect)  # 説明文を描画
@@ -475,7 +474,7 @@ def main():
             if event.type == pg.QUIT:
                 return
         screen.blit(bg_image, [0, 0])
-        if random.randint(0, 1000) < 10:  # 0.5%の確率で新しい飛行機を生成
+        if random.randint(0, 10000) < 10:  # 0.01%の確率で新しい飛行機を生成
             planes.add(Plane(bird))
          # タイマーの更新と終了判定
         remaining_time = timer.update(screen)
