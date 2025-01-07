@@ -449,7 +449,7 @@ def main():
     screen_scene = 0
     screen = pg.display.set_mode((WIDTH, HEIGHT))
     score = Score()
-    timer = Timer(30)
+    timer = Timer(60)
     pg.display.set_caption("ドリームバード")
     bg_image = pg.image.load("fig/sora.jpg")
     bird = Bird((300, 200))
